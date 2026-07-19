@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\DatingProfile;
 use App\Models\ProfilePreference;
 use App\Models\ProfilePhoto;
+use App\Models\ProfileTag;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -76,6 +77,8 @@ final class DemoDatingProfileSeeder extends Seeder
                     'moderation_status' => 'approved',
                 ],
             );
+
+            $this->syncTags($profile, $index);
         }
     }
 
@@ -100,5 +103,28 @@ final class DemoDatingProfileSeeder extends Seeder
         $imageId = (($index - 1) % 70) + 1;
 
         return sprintf('%s%simg=%d', $basePhotoUrl, $separator, $imageId);
+    }
+
+    private function syncTags(DatingProfile $profile, int $index): void
+    {
+        $tagSlugs = [
+            $this->cycle(['coffee', 'hiking', 'concerts', 'dogs', 'books'], $index),
+            $this->cycle(['cooking', 'running', 'comedy', 'cats', 'gaming'], $index + 1),
+            $this->cycle(['city-breaks', 'road-trips', 'movie-nights', 'open-minded', 'brunch'], $index + 2),
+            $this->cycle(['yoga', 'jazz', 'documentary', 'pet-friendly', 'humor-matters'], $index + 3),
+        ];
+
+        $tags = ProfileTag::query()->whereIn('slug', $tagSlugs)->get();
+        $syncPayload = [];
+        $sortOrder = 0;
+
+        foreach ($tags as $tag) {
+            $syncPayload[$tag->getKey()] = [
+                'visibility' => 2 === $sortOrder ? 'matches_only' : (3 === $sortOrder ? 'private_matching' : 'public'),
+                'sort_order' => $sortOrder++,
+            ];
+        }
+
+        $profile->tags()->sync($syncPayload);
     }
 }
