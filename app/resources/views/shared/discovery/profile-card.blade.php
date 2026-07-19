@@ -17,4 +17,11 @@
         @csrf
         <button type="submit">Reject</button>
     </form>
+    <form method="POST" action="{{ route('reports.submit') }}" class="stack">
+        @csrf
+        <input type="hidden" name="target_type" value="profile">
+        <input type="hidden" name="target_id" value="{{ $candidate->getKey() }}">
+        <input type="hidden" name="category" value="profile_concern">
+        <button type="submit">Report profile</button>
+    </form>
 </article>

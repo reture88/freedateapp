@@ -18,6 +18,13 @@
                     <strong>AI Szarnyseged</strong>
                 @endif
                 <p>{{ $message->body }}</p>
+                <form method="POST" action="{{ route('reports.submit') }}">
+                    @csrf
+                    <input type="hidden" name="target_type" value="{{ 'assistant' === $message->sender_type ? 'assistant_message' : 'message' }}">
+                    <input type="hidden" name="target_id" value="{{ $message->getKey() }}">
+                    <input type="hidden" name="category" value="message_concern">
+                    <button type="submit">Report message</button>
+                </form>
             </article>
         @empty
             <p>No messages yet.</p>
