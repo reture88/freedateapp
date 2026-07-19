@@ -5,13 +5,19 @@ declare(strict_types=1);
 namespace App\Profile\Presentation\Controller;
 
 use App\Models\User;
-use App\Profile\DomainService\SaveDatingProfileOnboardingService;
+use App\Profile\RequestHandler\SaveDatingProfile\SaveDatingProfileCommand;
+use App\Shared\Dto\ValueObject\Context\SystemContext;
+use App\Shared\Infrastructure\Bus\Command\CommandBusInterface;
+use App\Shared\Infrastructure\Validation\ValidationException;
+use App\Shared\Presentation\Controller\InteractsWithErrorResponses;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 final readonly class SaveOnboardingController
 {
-    public function __construct(private SaveDatingProfileOnboardingService $service)
+    use InteractsWithErrorResponses;
+
+    public function __construct(private CommandBusInterface $commandBus)
     {
     }
 
@@ -20,22 +26,16 @@ final readonly class SaveOnboardingController
         /** @var User $user */
         $user = $request->user();
 
-        $validated = $request->validate([
-            'display_name' => 'required|string|max:80',
-            'birthdate' => 'required|date|before_or_equal:-18 years',
-            'gender' => 'required|string|max:40',
-            'orientation' => 'required|string|max:40',
-            'city' => 'required|string|max:120',
-            'country_code' => 'required|string|size:2',
-            'approximate_latitude' => 'nullable|numeric|between:-90,90',
-            'approximate_longitude' => 'nullable|numeric|between:-180,180',
-            'relationship_intent' => 'required|string|max:60',
-            'bio' => 'nullable|string|max:1000',
-            'ai_wingman_enabled' => 'nullable|boolean',
-            'privacy_consent' => 'accepted',
-        ]);
+        $payload = $request->all();
+        $payload['user_id'] = $user->getKey();
 
-        $this->service->handle($user, $validated);
+        try {
+            $this->commandBus->dispatchPayload(SaveDatingProfileCommand::class, $payload, new SystemContext((string) $user->getKey(), $request->ip()));
+        } catch (ValidationException $exception) {
+            return $this->backWithValidationErrors($exception, $request->except('privacy_consent'));
+        } catch (\InvalidArgumentException $exception) {
+            return back()->withErrors(['birthdate' => $exception->getMessage()])->withInput($request->except('privacy_consent'));
+        }
 
         return redirect('/dating-profile/preview')->with('success', 'Dating profile completed.');
     }

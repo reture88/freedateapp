@@ -6,29 +6,29 @@ namespace App\Profile\DomainService;
 
 use App\Models\DatingProfile;
 use App\Models\User;
+use App\Profile\RequestHandler\SaveDatingProfile\SaveDatingProfileCommand;
 use Illuminate\Support\Carbon;
 
 final class SaveDatingProfileOnboardingService
 {
-    /**
-     * @param array<string, mixed> $data
-     */
-    public function handle(User $user, array $data): DatingProfile
+    public function handle(SaveDatingProfileCommand $command): DatingProfile
     {
+        $user = User::query()->findOrFail($command->userId);
+
         $profile = $user->datingProfile()->updateOrCreate([], [
-            'display_name' => $data['display_name'],
-            'birthdate' => $data['birthdate'],
-            'gender' => $data['gender'],
-            'orientation' => $data['orientation'],
-            'city' => $data['city'],
-            'country_code' => strtoupper((string) $data['country_code']),
-            'approximate_latitude' => $data['approximate_latitude'] ?? null,
-            'approximate_longitude' => $data['approximate_longitude'] ?? null,
-            'relationship_intent' => $data['relationship_intent'],
-            'bio' => $data['bio'] ?? null,
+            'display_name' => $command->displayName,
+            'birthdate' => $command->birthdate,
+            'gender' => $command->gender,
+            'orientation' => $command->orientation,
+            'city' => $command->city,
+            'country_code' => $command->countryCode,
+            'approximate_latitude' => $command->approximateLatitude,
+            'approximate_longitude' => $command->approximateLongitude,
+            'relationship_intent' => $command->relationshipIntent,
+            'bio' => $command->bio,
             'visibility_status' => 'visible',
             'moderation_status' => 'pending',
-            'ai_wingman_enabled' => (bool) ($data['ai_wingman_enabled'] ?? false),
+            'ai_wingman_enabled' => $command->aiWingmanEnabled,
             'completed_at' => Carbon::now(),
         ]);
 

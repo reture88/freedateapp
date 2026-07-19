@@ -13,13 +13,14 @@ Each module under `app/src/<Module>/` keeps these concerns strictly separate:
 
 - **`RequestHandler/<UseCase>/`** — one `{UseCase}Command.php` (or `Query.php`), its `{UseCase}CommandHandler.php`, and a `{UseCase}CommandResponse.php`. The Command/Query is a self-constructing, self-validating DTO (`SelfConstructingRequestInterface::createFromArray()`, `ValidateRequestInterface::rules()`). The Handler does **no business logic** — it unwraps the command, calls exactly one DomainService method, and wraps the result in a Response. Reference: `app/src/Auth/RequestHandler/Login/`.
 - **`DomainService/`** — plain classes with **only** `__construct()` + `handle()`. All business logic lives here, never in the Handler or Controller. Reference: `app/src/User/DomainService/UpdateProfileService.php`.
-- **`Presentation/Controller/`** — single-action controllers (`__invoke()`, never a named action method). A controller's job is: run Laravel's own `$request->validate()` for HTTP-shape validation, dispatch a Command/Query through `CommandBusInterface`/`QueryBusInterface`, catch the relevant domain exceptions, return a response. No business logic here either. Reference: `app/src/Auth/Presentation/Controller/LoginController.php`.
+- **`Presentation/Controller/`** — single-action controllers (`__invoke()`, never a named action method). A controller's job is: collect the raw request payload plus authenticated context, dispatch a Command/Query through `CommandBusInterface`/`QueryBusInterface`, catch validation/domain exceptions, and return a response. Controllers do **not** run Laravel `$request->validate()` for module use cases; request validation belongs in the self-validating Command/Query DTO via `ValidateRequestInterface::rules()` and `createFromArray()`. No business logic here either.
 - **`Presentation/Routes/routes.php`** — module-local routes, auto-discovered by `RouteServiceProvider` (glob on `src/*/Presentation/Routes/routes.php`). Never register module routes anywhere else.
 - **`Dto/ValueObject/`** — every meaningful scalar gets wrapped in a `final readonly class` that self-validates in its constructor (e.g. `EmailAddress`, `PlainPassword`). Never pass a bare `string $email` or `int $userId` through a Command/Service signature — wrap it.
 
 ## Hard rules
 
 - Controllers: `__invoke()` only.
+- Controllers do not validate request fields for CQRS use cases; Commands/Queries own validation.
 - Services: `__construct()` + `handle()` only — no other public methods.
 - No DB/Eloquent queries inside a DomainService. If a module needs one, add a `Dto/Repository/{X}RepositoryInterface.php` + an Eloquent implementation, and bind it in `CqrsServiceProvider::register()`. (Prefer calling Eloquent models directly from the DomainService when the model *is* the aggregate root and no cross-cutting query logic is needed — that's what `Auth`/`User` currently do against `App\Models\User`. Only introduce a repository when there's real query complexity to hide.)
 - Never inject one repository into another (avoids container resolution loops).
