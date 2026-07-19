@@ -47,18 +47,4 @@
             </form>
         </section>
     </div>
-
-    <div class="grid grid--two grid--spaced">
-        @include('user.partials.address-form', [
-            'title' => 'Szallitasi cim',
-            'type' => 'shipping',
-            'address' => $shippingAddress,
-        ])
-
-        @include('user.partials.address-form', [
-            'title' => 'Szamlazasi cim',
-            'type' => 'billing',
-            'address' => $billingAddress,
-        ])
-    </div>
 @endsection

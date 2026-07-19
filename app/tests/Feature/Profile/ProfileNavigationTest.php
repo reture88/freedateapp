@@ -27,6 +27,8 @@ final class ProfileNavigationTest extends TestCase
             ->get('/profile')
             ->assertOk()
             ->assertSee('Tarskereso profil')
-            ->assertSee('/dating-profile/edit');
+            ->assertSee('/dating-profile/edit')
+            ->assertDontSee('Szallitasi cim')
+            ->assertDontSee('Szamlazasi cim');
     }
 }

@@ -14,6 +14,7 @@
 !/app/storage/app/.gitkeep
 !/app/storage/app/public/
 !/app/storage/app/public/.gitkeep
+/app/storage/app/public/profile-photos/
 /app/storage/framework/compiled.php
 /app/storage/framework/config.php
 /app/storage/framework/down
