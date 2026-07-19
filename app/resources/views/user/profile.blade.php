@@ -9,6 +9,7 @@
             <h1>Profil</h1>
             <p>Alapadatok, jelszo es rendeléshez hasznalt cimek kezelese.</p>
         </div>
+        <a class="button button--secondary" href="{{ route('dating-profile.edit') }}">Tarskereso profil</a>
     </section>
 
     <div class="grid grid--two">
