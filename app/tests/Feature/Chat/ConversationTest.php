@@ -9,7 +9,9 @@ use App\Models\Conversation;
 use App\Models\DatingProfile;
 use App\Models\Message;
 use App\Models\ProfilePhoto;
+use App\Models\ProfileTag;
 use App\Models\User;
+use Database\Seeders\ProfileTagTaxonomySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -114,11 +116,25 @@ final class ConversationTest extends TestCase
     public function test_matched_user_can_view_other_profile_from_chat(): void
     {
         [$first, $second] = $this->createMatchedConversation();
+        $this->seed(ProfileTagTaxonomySeeder::class);
+        $coffee = ProfileTag::query()->where('slug', 'coffee')->firstOrFail();
+        $hiking = ProfileTag::query()->where('slug', 'hiking')->firstOrFail();
+        $cats = ProfileTag::query()->where('slug', 'cats')->firstOrFail();
+
+        $second->tags()->sync([
+            $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
+            $hiking->getKey() => ['visibility' => 'matches_only', 'sort_order' => 1],
+            $cats->getKey() => ['visibility' => 'private_matching', 'sort_order' => 2],
+        ]);
 
         $this->actingAs($first->user)
             ->get(sprintf('/profiles/%d', $second->getKey()))
             ->assertOk()
-            ->assertSee($second->display_name);
+            ->assertSee($second->display_name)
+            ->assertSee($second->bio)
+            ->assertSee('Coffee')
+            ->assertSee('Hiking')
+            ->assertDontSee('Cats');
     }
 
     public function test_unmatched_user_cannot_view_other_profile(): void

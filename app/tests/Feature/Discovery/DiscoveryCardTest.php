@@ -33,6 +33,7 @@ final class DiscoveryCardTest extends TestCase
 
     public function test_user_sees_one_candidate_card(): void
     {
+        $this->seed(\Database\Seeders\ProfileTagTaxonomySeeder::class);
         $viewer = $this->createProfile('viewer.card@example.com', ['display_name' => 'Viewer']);
         $this->createPreference($viewer);
         $candidate = $this->createProfile('candidate.card@example.com', [
@@ -49,6 +50,16 @@ final class DiscoveryCardTest extends TestCase
             'is_primary' => true,
             'moderation_status' => 'approved',
         ]);
+        $coffee = \App\Models\ProfileTag::query()->where('slug', 'coffee')->firstOrFail();
+        $cats = \App\Models\ProfileTag::query()->where('slug', 'cats')->firstOrFail();
+        $viewer->tags()->sync([
+            $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
+            $cats->getKey() => ['visibility' => 'private_matching', 'sort_order' => 1],
+        ]);
+        $candidate->tags()->sync([
+            $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
+            $cats->getKey() => ['visibility' => 'private_matching', 'sort_order' => 1],
+        ]);
 
         $this->actingAs($viewer->user)
             ->get('/discovery')
@@ -58,6 +69,9 @@ final class DiscoveryCardTest extends TestCase
             ->assertSee('long_term')
             ->assertSee('Kave, koncertek, hetvegi kirandulasok.')
             ->assertSee('profiles/marika.jpg')
+            ->assertSee('Shared interests')
+            ->assertSee('Coffee')
+            ->assertDontSee('Cats')
             ->assertSee('Accept')
             ->assertSee('Reject');
     }

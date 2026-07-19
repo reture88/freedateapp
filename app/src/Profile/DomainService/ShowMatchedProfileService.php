@@ -14,7 +14,7 @@ final class ShowMatchedProfileService
     public function handle(ShowMatchedProfileQuery $query): DatingProfile
     {
         $viewerProfile = User::query()->findOrFail($query->userId)->datingProfile()->firstOrFail();
-        $profile = DatingProfile::query()->with(['photos', 'user'])->findOrFail($query->profileId);
+        $profile = DatingProfile::query()->with(['photos', 'tags.category', 'user'])->findOrFail($query->profileId);
 
         if ((int) $viewerProfile->getKey() === (int) $profile->getKey()) {
             return $profile;

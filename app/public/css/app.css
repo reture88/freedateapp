@@ -754,6 +754,38 @@ select {
     align-items: center;
 }
 
+.profile-tag-display {
+    display: grid;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.profile-tag-display h2,
+.shared-interest-list h2 {
+    margin: 0 0 8px;
+    color: var(--color-muted);
+    font-size: 14px;
+}
+
+.tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.tag-list span {
+    display: inline-flex;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: var(--color-surface-muted);
+    color: var(--color-text);
+    font-size: 13px;
+}
+
+.shared-interest-list {
+    margin: 16px 0;
+}
+
 .conversation-header {
     display: flex;
     align-items: center;
