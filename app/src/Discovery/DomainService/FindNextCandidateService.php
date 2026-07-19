@@ -49,8 +49,12 @@ final class FindNextCandidateService
             ->when($preference->exclude_ai_wingman_enabled, static function ($query): void {
                 $query->where('ai_wingman_enabled', false);
             })
+            ->with('tags')
             ->orderBy('id')
             ->get();
+
+        $viewerTagIds = $viewerProfile->tags()->pluck('profile_tags.id')->map(static fn ($id): int => (int) $id)->all();
+        $rankedCandidates = [];
 
         foreach ($candidates as $candidate) {
             if (!$this->passesAgeFilter($candidate, $preference)) {
@@ -61,10 +65,27 @@ final class FindNextCandidateService
                 continue;
             }
 
-            return $candidate;
+            $rankedCandidates[] = [
+                'profile' => $candidate,
+                'score' => $this->sharedTagScore($viewerTagIds, $candidate),
+            ];
         }
 
-        return null;
+        if ([] === $rankedCandidates) {
+            return null;
+        }
+
+        usort($rankedCandidates, static function (array $first, array $second): int {
+            $scoreComparison = $second['score'] <=> $first['score'];
+
+            if (0 !== $scoreComparison) {
+                return $scoreComparison;
+            }
+
+            return (int) $first['profile']->getKey() <=> (int) $second['profile']->getKey();
+        });
+
+        return $rankedCandidates[0]['profile'];
     }
 
     /**
@@ -109,5 +130,19 @@ final class FindNextCandidateService
             $candidate->approximate_latitude,
             $candidate->approximate_longitude,
         ) <= $preference->preferred_distance_km;
+    }
+
+    /**
+     * @param list<int> $viewerTagIds
+     */
+    private function sharedTagScore(array $viewerTagIds, DatingProfile $candidate): int
+    {
+        if ([] === $viewerTagIds) {
+            return 0;
+        }
+
+        $candidateTagIds = $candidate->tags->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+
+        return count(array_intersect($viewerTagIds, $candidateTagIds));
     }
 }

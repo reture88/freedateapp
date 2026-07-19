@@ -87,6 +87,43 @@ final class DiscoveryCardTest extends TestCase
             ->assertSee('No profiles available right now.');
     }
 
+    public function test_candidate_with_more_shared_tags_is_ranked_first(): void
+    {
+        $this->seed(\Database\Seeders\ProfileTagTaxonomySeeder::class);
+        $viewer = $this->createProfile('viewer.ranking@example.com', ['display_name' => 'Viewer']);
+        $this->createPreference($viewer);
+        $fewMatches = $this->createProfile('candidate.low-ranking@example.com', [
+            'display_name' => 'Few Shared Tags',
+        ]);
+        $manyMatches = $this->createProfile('candidate.high-ranking@example.com', [
+            'display_name' => 'Many Shared Tags',
+        ]);
+
+        $coffee = \App\Models\ProfileTag::query()->where('slug', 'coffee')->firstOrFail();
+        $hiking = \App\Models\ProfileTag::query()->where('slug', 'hiking')->firstOrFail();
+        $cats = \App\Models\ProfileTag::query()->where('slug', 'cats')->firstOrFail();
+
+        $viewer->tags()->sync([
+            $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
+            $hiking->getKey() => ['visibility' => 'private_matching', 'sort_order' => 1],
+            $cats->getKey() => ['visibility' => 'private_matching', 'sort_order' => 2],
+        ]);
+        $fewMatches->tags()->sync([
+            $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
+        ]);
+        $manyMatches->tags()->sync([
+            $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
+            $hiking->getKey() => ['visibility' => 'private_matching', 'sort_order' => 1],
+            $cats->getKey() => ['visibility' => 'private_matching', 'sort_order' => 2],
+        ]);
+
+        $this->actingAs($viewer->user)
+            ->get('/discovery')
+            ->assertOk()
+            ->assertSee('Many Shared Tags')
+            ->assertDontSee('Few Shared Tags');
+    }
+
     /**
      * @param array<string, mixed> $overrides
      */
