@@ -43,7 +43,10 @@
             <form method="POST" action="{{ route('admin.users.moderation', $user) }}">
                 @csrf
                 <input type="hidden" name="action" value="suspend">
-                <button type="submit">Suspend</button>
+                @include('components.confirm-button', [
+                    'label' => 'Suspend',
+                    'message' => 'Suspend this user account?',
+                ])
             </form>
             <form method="POST" action="{{ route('admin.users.moderation', $user) }}">
                 @csrf

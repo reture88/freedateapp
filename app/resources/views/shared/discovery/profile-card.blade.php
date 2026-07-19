@@ -22,12 +22,19 @@
         <input type="hidden" name="target_type" value="profile">
         <input type="hidden" name="target_id" value="{{ $candidate->getKey() }}">
         <input type="hidden" name="category" value="profile_concern">
-        <button type="submit">Report profile</button>
+        @include('components.confirm-button', [
+            'label' => 'Report profile',
+            'message' => 'Submit a safety report for this profile?',
+            'class' => 'button button--secondary',
+        ])
     </form>
     <form method="POST" action="{{ route('blocks.submit') }}" class="stack">
         @csrf
         <input type="hidden" name="blocked_user_id" value="{{ $candidate->user_id }}">
         <input type="hidden" name="reason_category" value="safety">
-        <button type="submit">Block user</button>
+        @include('components.confirm-button', [
+            'label' => 'Block user',
+            'message' => 'Block this user and hide any shared chat?',
+        ])
     </form>
 </article>

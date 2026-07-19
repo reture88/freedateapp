@@ -7,7 +7,7 @@
         <div>
             <p class="eyebrow">Admin</p>
             <h1>Report #{{ $report->getKey() }}</h1>
-            <p>{{ $report->status }}</p>
+            <p>@include('components.status-badge', ['status' => $report->status])</p>
         </div>
     </section>
 
@@ -24,7 +24,10 @@
                 @csrf
                 <input type="hidden" name="action" value="hide_profile">
                 <input type="hidden" name="resolution" value="profile_hidden">
-                <button type="submit">Hide profile and resolve</button>
+                @include('components.confirm-button', [
+                    'label' => 'Hide profile and resolve',
+                    'message' => 'Hide the reported profile and resolve this report?',
+                ])
             </form>
         @endif
     </section>

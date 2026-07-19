@@ -6,9 +6,11 @@
     @if ($candidate)
         @include('shared.discovery.profile-card', ['candidate' => $candidate])
     @else
-        <section class="panel">
-            <h1>No profiles available right now.</h1>
-            <p>Update your preferences or check back later.</p>
-        </section>
+        @include('components.empty-state', [
+            'title' => 'No profiles available right now.',
+            'message' => 'Update your preferences or check back later.',
+            'actionUrl' => route('dating-preferences.edit'),
+            'actionLabel' => 'Edit preferences',
+        ])
     @endif
 @endsection

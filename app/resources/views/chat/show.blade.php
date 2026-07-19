@@ -7,33 +7,49 @@
         <h1>{{ $conversationView->otherProfile->display_name }}</h1>
         <form method="POST" action="{{ route('connections.unmatch', ['connection' => $conversationView->conversation->connection_id]) }}">
             @csrf
-            <button type="submit">Unmatch</button>
+            @include('components.confirm-button', [
+                'label' => 'Unmatch',
+                'message' => 'Unmatch this person and close the chat?',
+            ])
         </form>
         <form method="POST" action="{{ route('blocks.submit') }}">
             @csrf
             <input type="hidden" name="blocked_user_id" value="{{ $conversationView->otherProfile->user_id }}">
             <input type="hidden" name="reason_category" value="safety">
-            <button type="submit">Block user</button>
+            @include('components.confirm-button', [
+                'label' => 'Block user',
+                'message' => 'Block this user and close the chat?',
+            ])
         </form>
 
         @include('shared.form-errors')
 
         @forelse ($conversationView->conversation->messages()->orderBy('created_at')->get() as $message)
+            @if ('assistant' === $message->sender_type)
+                @include('components.assistant-message', ['message' => $message])
+            @else
+                <article>
+                    <p>{{ $message->body }}</p>
+                </article>
+            @endif
             <article>
-                @if ('assistant' === $message->sender_type)
-                    <strong>AI Szarnyseged</strong>
-                @endif
-                <p>{{ $message->body }}</p>
                 <form method="POST" action="{{ route('reports.submit') }}">
                     @csrf
                     <input type="hidden" name="target_type" value="{{ 'assistant' === $message->sender_type ? 'assistant_message' : 'message' }}">
                     <input type="hidden" name="target_id" value="{{ $message->getKey() }}">
                     <input type="hidden" name="category" value="message_concern">
-                    <button type="submit">Report message</button>
+                    @include('components.confirm-button', [
+                        'label' => 'Report message',
+                        'message' => 'Submit a safety report for this message?',
+                        'class' => 'button button--secondary',
+                    ])
                 </form>
             </article>
         @empty
-            <p>No messages yet.</p>
+            @include('components.empty-state', [
+                'title' => 'No messages yet.',
+                'message' => 'Send a short first message when you are ready.',
+            ])
         @endforelse
 
         <form method="POST" action="{{ route('conversations.messages.send', ['conversation' => $conversationView->conversation->getKey()]) }}" class="stack">
