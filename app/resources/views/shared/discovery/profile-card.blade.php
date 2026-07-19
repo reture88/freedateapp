@@ -24,4 +24,10 @@
         <input type="hidden" name="category" value="profile_concern">
         <button type="submit">Report profile</button>
     </form>
+    <form method="POST" action="{{ route('blocks.submit') }}" class="stack">
+        @csrf
+        <input type="hidden" name="blocked_user_id" value="{{ $candidate->user_id }}">
+        <input type="hidden" name="reason_category" value="safety">
+        <button type="submit">Block user</button>
+    </form>
 </article>

@@ -9,6 +9,12 @@
             @csrf
             <button type="submit">Unmatch</button>
         </form>
+        <form method="POST" action="{{ route('blocks.submit') }}">
+            @csrf
+            <input type="hidden" name="blocked_user_id" value="{{ $conversationView->otherProfile->user_id }}">
+            <input type="hidden" name="reason_category" value="safety">
+            <button type="submit">Block user</button>
+        </form>
 
         @include('shared.form-errors')
 
