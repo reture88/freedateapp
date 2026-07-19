@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class DatingProfile extends Model
 {
@@ -59,6 +60,17 @@ class DatingProfile extends Model
     public function preference(): HasOne
     {
         return $this->hasOne(ProfilePreference::class);
+    }
+
+    /**
+     * @return BelongsToMany<ProfileTag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(ProfileTag::class, 'dating_profile_tags')
+            ->withPivot(['visibility', 'sort_order'])
+            ->withTimestamps()
+            ->orderByPivot('sort_order');
     }
 
     /**
