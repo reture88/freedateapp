@@ -14,6 +14,9 @@
 
         @forelse ($conversationView->conversation->messages()->orderBy('created_at')->get() as $message)
             <article>
+                @if ('assistant' === $message->sender_type)
+                    <strong>AI Szarnyseged</strong>
+                @endif
                 <p>{{ $message->body }}</p>
             </article>
         @empty

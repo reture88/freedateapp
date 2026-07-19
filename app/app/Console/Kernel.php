@@ -11,6 +11,7 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule(Schedule $schedule): void
     {
+        $schedule->command('assistant:post-wingman-starters')->everyFifteenMinutes();
     }
 
     protected function commands(): void
