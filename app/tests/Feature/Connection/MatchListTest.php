@@ -15,6 +15,22 @@ final class MatchListTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_user_without_dating_profile_is_redirected_to_onboarding(): void
+    {
+        $user = User::query()->create([
+            'name' => 'Match User',
+            'email' => 'matches.no-profile@example.com',
+            'password' => 'secret123',
+            'role' => 'customer',
+            'is_admin' => false,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/matches')
+            ->assertRedirect('/dating-profile/onboarding');
+    }
+
     public function test_user_sees_only_active_matched_connections(): void
     {
         $viewer = $this->createProfile('matches.viewer@example.com', ['display_name' => 'Viewer']);

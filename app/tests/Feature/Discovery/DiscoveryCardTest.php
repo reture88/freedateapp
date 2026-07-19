@@ -15,6 +15,22 @@ final class DiscoveryCardTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_user_without_dating_profile_is_redirected_to_onboarding(): void
+    {
+        $user = User::query()->create([
+            'name' => 'Discovery User',
+            'email' => 'viewer.no-profile@example.com',
+            'password' => 'secret123',
+            'role' => 'customer',
+            'is_admin' => false,
+            'is_active' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->get('/discovery')
+            ->assertRedirect('/dating-profile/onboarding');
+    }
+
     public function test_user_sees_one_candidate_card(): void
     {
         $viewer = $this->createProfile('viewer.card@example.com', ['display_name' => 'Viewer']);

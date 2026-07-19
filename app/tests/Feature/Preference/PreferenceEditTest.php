@@ -14,6 +14,15 @@ final class PreferenceEditTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_user_without_dating_profile_is_redirected_to_onboarding(): void
+    {
+        $user = $this->createUser('preferences.no-profile@example.com');
+
+        $this->actingAs($user)
+            ->get('/dating-preferences/edit')
+            ->assertRedirect('/dating-profile/onboarding');
+    }
+
     public function test_defaults_exist_after_profile_completion_and_user_can_update_preferences(): void
     {
         $user = $this->createUser('preferences@example.com');
