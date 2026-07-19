@@ -16,8 +16,8 @@ return new class () extends Migration {
             $table->string('orientation', 40);
             $table->string('city', 120);
             $table->char('country_code', 2);
-            $table->double('approximate_latitude', 9, 6)->nullable();
-            $table->double('approximate_longitude', 9, 6)->nullable();
+            $table->decimal('approximate_latitude', 9, 6)->nullable();
+            $table->decimal('approximate_longitude', 9, 6)->nullable();
             $table->string('relationship_intent', 60);
             $table->text('bio')->nullable();
             $table->string('visibility_status', 30)->default('incomplete')->index();
