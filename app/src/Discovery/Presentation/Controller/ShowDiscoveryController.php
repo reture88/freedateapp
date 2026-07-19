@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Discovery\Presentation\Controller;
+
+use App\Discovery\RequestHandler\FindNextCandidate\FindNextCandidateQuery;
+use App\Discovery\RequestHandler\FindNextCandidate\FindNextCandidateQueryResponse;
+use App\Models\User;
+use App\Shared\Dto\ValueObject\Context\SystemContext;
+use App\Shared\Infrastructure\Bus\Query\QueryBusInterface;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\Request;
+
+final readonly class ShowDiscoveryController
+{
+    public function __construct(private QueryBusInterface $queryBus)
+    {
+    }
+
+    public function __invoke(Request $request): View
+    {
+        /** @var User $user */
+        $user = $request->user();
+        $response = $this->queryBus->askPayload(FindNextCandidateQuery::class, ['user_id' => $user->getKey()], new SystemContext((string) $user->getKey(), $request->ip()));
+
+        if (!$response instanceof FindNextCandidateQueryResponse) {
+            throw new \RuntimeException('Unexpected discovery response.');
+        }
+
+        return view('discovery.show', ['candidate' => $response->candidate]);
+    }
+}

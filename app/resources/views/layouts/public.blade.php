@@ -9,6 +9,7 @@
             <a href="{{ route('home') }}">Kezdolap</a>
             @auth
                 <a href="{{ route('profile.show') }}">Profil</a>
+                <a href="{{ route('discovery.show') }}">Discovery</a>
                 <a href="{{ route('dating-preferences.edit') }}">Preferenciak</a>
                 @if (auth()->user()?->canAccessAdminPanel())
                     <a href="{{ route('admin.users.index') }}">Admin</a>
