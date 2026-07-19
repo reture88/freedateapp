@@ -1,0 +1,756 @@
+# Freedateapp MVP Implementation Plan
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build the Freedateapp MVP on the existing Laravel/CQRS skeleton: completed dating profiles, preferences, one-at-a-time discovery, mutual matches, chat, AI Szárnysegéd starter messages, reporting/blocking, account controls, and admin moderation.
+
+**Architecture:** Keep the existing Laravel 12 app and DDD/CQRS module pattern. Add focused domain modules under `app/src/` with single-action controllers, thin request handlers, domain services, Eloquent models, migrations, Blade views, and feature/unit tests. Use server-rendered Blade for MVP UI; avoid adding a frontend SPA until product behavior is proven.
+
+**Tech Stack:** Laravel 12, PHP 8.4, MariaDB, Redis, Blade, PHPUnit, Larastan/PHPStan, PHP-CS-Fixer, Docker Compose.
+
+---
+
+## Source Documents
+
+- Product scope: `docs/freedateapp-product-scope.md`
+- Technical spec: `docs/freedateapp-technical-spec.md`
+- Design brief: `docs/freedateapp-figma-design-brief.md`
+- Repo guide: `AGENTS.md`
+- Laravel skill references:
+  - `.claude/skills/laravel-cqrs-conventions/SKILL.md`
+  - `.claude/skills/laravel-definition-of-done/SKILL.md`
+
+## Implementation Strategy
+
+Build in vertical slices. Each epic must leave the app runnable and tested.
+
+Order:
+
+1. Data foundation and shared enums.
+2. Profile onboarding.
+3. Preferences.
+4. Discovery and decisions.
+5. Connections and matched-only chat.
+6. AI Szárnysegéd.
+7. Safety, reports, blocks, account controls.
+8. Admin moderation and metrics.
+9. Design-readiness polish and final review.
+
+Every story follows TDD where practical:
+
+1. Write failing feature or unit test.
+2. Implement minimum behavior.
+3. Run targeted test.
+4. Run broader checks at epic end.
+5. Commit.
+
+## File Structure Decisions
+
+Create these modules:
+
+- `app/src/Profile/`
+- `app/src/Preference/`
+- `app/src/Discovery/`
+- `app/src/Connection/`
+- `app/src/Chat/`
+- `app/src/Safety/`
+- `app/src/Assistant/`
+- `app/src/Metrics/`
+
+Create Eloquent models in `app/app/Models/` when persistence is needed:
+
+- `DatingProfile`
+- `ProfilePhoto`
+- `ProfilePreference`
+- `DiscoveryDecision`
+- `Connection`
+- `Conversation`
+- `Message`
+- `Report`
+- `Block`
+- `AuditLog`
+- `MetricEvent`
+
+Blade views live under `app/resources/views/<module>/`.
+
+Tests live under:
+
+- `app/tests/Feature/Profile/`
+- `app/tests/Feature/Preference/`
+- `app/tests/Feature/Discovery/`
+- `app/tests/Feature/Connection/`
+- `app/tests/Feature/Chat/`
+- `app/tests/Feature/Safety/`
+- `app/tests/Feature/Admin/`
+- `app/tests/Unit/<Module>/`
+
+## Epic 1: Data Foundation
+
+**Goal:** Add database tables, Eloquent models, constants/enums, and factories needed by all later epics.
+
+### Story 1.1: Dating Profile Persistence
+
+**Files:**
+
+- Create migration: `app/database/migrations/YYYY_MM_DD_000001_create_dating_profiles_table.php`
+- Create model: `app/app/Models/DatingProfile.php`
+- Modify: `app/app/Models/User.php`
+- Test: `app/tests/Unit/Profile/DatingProfileModelTest.php`
+
+Acceptance:
+
+- User has one dating profile.
+- Profile stores public dating fields separately from `users`.
+- Profile has `hidden`, `visible`, `incomplete`, `suspended`, `banned` statuses.
+
+Steps:
+
+- [ ] Write model relationship test for `User::datingProfile()`.
+- [ ] Add migration with user foreign key, display name, birthdate, gender, orientation, city, country code, approximate lat/lng, relationship intent, bio, visibility status, moderation status, AI wingman flag, completed timestamp.
+- [ ] Add `DatingProfile` model with fillable fields and casts.
+- [ ] Add `datingProfile()` relation to `User`.
+- [ ] Run `docker compose exec php vendor/bin/phpunit --filter DatingProfileModelTest`.
+- [ ] Commit: `feat: add dating profile persistence`.
+
+### Story 1.2: Preferences, Photos, Decisions, Connections, Chat Tables
+
+**Files:**
+
+- Create migrations for profile photos, preferences, decisions, connections, conversations, messages.
+- Create Eloquent models listed in File Structure Decisions.
+- Test: `app/tests/Unit/Connection/ConnectionModelTest.php`
+
+Acceptance:
+
+- Tables support one profile preference row per profile.
+- Discovery decisions are unique per viewer-target pair.
+- Connections use deterministic profile ordering.
+- Conversations belong to matched connections.
+- Messages support user and assistant sender types.
+
+Steps:
+
+- [ ] Write tests for model relationships and unique constraints.
+- [ ] Create migrations with explicit foreign keys and indexes.
+- [ ] Add Eloquent models and relationships.
+- [ ] Add deterministic connection helper method or domain value object.
+- [ ] Run targeted unit tests.
+- [ ] Commit: `feat: add dating interaction tables`.
+
+### Story 1.3: Safety and Metrics Tables
+
+**Files:**
+
+- Create migrations for reports, blocks, audit logs, metric events.
+- Create models: `Report`, `Block`, `AuditLog`, `MetricEvent`.
+- Test: `app/tests/Unit/Safety/SafetyModelTest.php`
+
+Acceptance:
+
+- Reports can target profile, message, assistant message, or user.
+- Blocks prevent future interactions.
+- Audit logs store admin action metadata.
+- Metric events store event name and JSON payload.
+
+Steps:
+
+- [ ] Write model relationship tests.
+- [ ] Create migrations and indexes.
+- [ ] Add models and casts.
+- [ ] Run targeted unit tests.
+- [ ] Commit: `feat: add safety and metrics persistence`.
+
+### Epic 1 Review Gate
+
+- [ ] `docker compose exec php composer test`
+- [ ] `docker compose exec php composer phpstan`
+- [ ] `docker compose exec php composer cs-check`
+- [ ] Confirm no route behavior changed yet.
+- [ ] Review migrations for reversible down methods and matching foreign key types.
+
+## Epic 2: Profile Onboarding
+
+**Goal:** Let users create, edit, preview, hide, and complete a dating profile.
+
+### Story 2.1: Profile Onboarding Wizard
+
+**Files:**
+
+- Create module: `app/src/Profile/`
+- Create controllers for onboarding steps.
+- Create views under `app/resources/views/profile/onboarding/`.
+- Create routes: `app/src/Profile/Presentation/Routes/routes.php`
+- Test: `app/tests/Feature/Profile/ProfileOnboardingTest.php`
+
+Acceptance:
+
+- Logged-in user without completed profile is sent to onboarding.
+- User can save basics, photos placeholder metadata, bio/prompts, interests, intent, and privacy consent.
+- Completed profile gets `completed_at`.
+- Incomplete profile does not enter discovery.
+
+Steps:
+
+- [ ] Write feature test for completing onboarding from basics to preview.
+- [ ] Add Profile module routes guarded by auth middleware.
+- [ ] Add command/request handlers and domain services for saving profile sections.
+- [ ] Add Blade views using existing layout patterns.
+- [ ] Add redirect logic after login/registration for incomplete profiles.
+- [ ] Run `docker compose exec php vendor/bin/phpunit --filter ProfileOnboardingTest`.
+- [ ] Commit: `feat: add profile onboarding`.
+
+### Story 2.2: Profile Edit and Visibility
+
+**Files:**
+
+- Create controllers and views for profile edit, preview, and visibility.
+- Test: `app/tests/Feature/Profile/ProfileVisibilityTest.php`
+
+Acceptance:
+
+- User can edit profile after completion.
+- User can hide/show profile from discovery.
+- Hidden profile cannot appear in discovery.
+
+Steps:
+
+- [ ] Write feature tests for edit and hide/show.
+- [ ] Add `UpdateProfileVisibilityService`.
+- [ ] Add edit/preview views.
+- [ ] Add UI links from authenticated layout.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add profile editing and visibility controls`.
+
+### Epic 2 Review Gate
+
+- [ ] Run full tests, PHPStan, and style check.
+- [ ] Browser smoke: register, complete onboarding, preview profile, hide/show profile.
+- [ ] Confirm incomplete profile cannot reach discovery.
+
+## Epic 3: Preferences
+
+**Goal:** Store and edit matching preferences, including AI Szárnysegéd exclusion.
+
+### Story 3.1: Preference Editing
+
+**Files:**
+
+- Create module: `app/src/Preference/`
+- Create views: `app/resources/views/preference/edit.blade.php`
+- Test: `app/tests/Feature/Preference/PreferenceEditTest.php`
+
+Acceptance:
+
+- User can set age range, distance, preferred genders/orientations, relationship intent, and AI Szárnysegéd exclusion.
+- Invalid ranges are rejected.
+- Defaults exist after profile completion.
+
+Steps:
+
+- [ ] Write feature tests for valid and invalid preference saves.
+- [ ] Add Preference module routes and controller.
+- [ ] Add command, handler, service, and response classes.
+- [ ] Add edit form with clear labels and helper text.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add dating preferences`.
+
+### Story 3.2: Preference Summary for Design and Discovery
+
+**Files:**
+
+- Create query service for preference summary.
+- Modify profile/settings navigation.
+- Test: `app/tests/Unit/Preference/PreferenceSummaryTest.php`
+
+Acceptance:
+
+- Discovery can consume normalized hard filters.
+- UI can display a compact preference summary.
+
+Steps:
+
+- [ ] Write unit test for normalized hard filter output.
+- [ ] Add query and response classes.
+- [ ] Add summary component partial.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: expose preference summary`.
+
+### Epic 3 Review Gate
+
+- [ ] Full tests, PHPStan, style check.
+- [ ] Browser smoke: update preferences and confirm validation messages.
+- [ ] Design check: labels match `docs/freedateapp-figma-design-brief.md`.
+
+## Epic 4: Discovery
+
+**Goal:** Show one eligible profile at a time and record accept/reject decisions.
+
+### Story 4.1: Candidate Query
+
+**Files:**
+
+- Create module: `app/src/Discovery/`
+- Create candidate query service.
+- Test: `app/tests/Unit/Discovery/CandidateQueryTest.php`
+
+Acceptance:
+
+- Candidate query excludes current user, incomplete profiles, hidden profiles, moderated profiles, blocked users, previous decisions, and AI-enabled profiles when excluded.
+- Candidate query applies age, distance, gender/orientation, and relationship intent filters.
+
+Steps:
+
+- [ ] Write unit tests with seeded profiles for each exclusion rule.
+- [ ] Add `FindNextCandidateQuery`, handler, response, and domain service.
+- [ ] Add distance calculation utility using approximate coordinates.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add discovery candidate query`.
+
+### Story 4.2: Discovery Card UI
+
+**Files:**
+
+- Create controller and route for discovery screen.
+- Create view: `app/resources/views/discovery/show.blade.php`
+- Test: `app/tests/Feature/Discovery/DiscoveryCardTest.php`
+
+Acceptance:
+
+- User sees one candidate card.
+- Empty state appears when no candidates exist.
+- Card shows photo, display name, age, location, intent, bio, and shared interests.
+
+Steps:
+
+- [ ] Write feature tests for candidate and empty state.
+- [ ] Add controller and route.
+- [ ] Add Blade view and profile card partial.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add discovery card screen`.
+
+### Story 4.3: Accept and Reject Decisions
+
+**Files:**
+
+- Create accept/reject commands and handlers.
+- Modify discovery view actions.
+- Test: `app/tests/Feature/Discovery/DiscoveryDecisionTest.php`
+
+Acceptance:
+
+- Reject records a decision and advances the queue.
+- Accept records a decision and creates/updates a connection.
+- Reciprocal accept creates a match and conversation.
+
+Steps:
+
+- [ ] Write feature tests for reject, one-sided accept, and mutual accept.
+- [ ] Add decision command classes and services.
+- [ ] Add forms/buttons for accept/reject.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add discovery decisions and matching`.
+
+### Epic 4 Review Gate
+
+- [ ] Full tests, PHPStan, style check.
+- [ ] Browser smoke: create two users, complete profiles, accept from both sides, confirm match.
+- [ ] Confirm rejected profiles do not reappear.
+
+## Epic 5: Connections and Chat
+
+**Goal:** Let matched users see connections and exchange text messages.
+
+### Story 5.1: Match List
+
+**Files:**
+
+- Create module: `app/src/Connection/`
+- Create view: `app/resources/views/connection/index.blade.php`
+- Test: `app/tests/Feature/Connection/MatchListTest.php`
+
+Acceptance:
+
+- User sees only matched connections.
+- Pending, unmatched, blocked, and moderated connections are excluded.
+
+Steps:
+
+- [ ] Write feature tests for match list filtering.
+- [ ] Add query and controller.
+- [ ] Add match list view.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add match list`.
+
+### Story 5.2: Conversation View and Send Message
+
+**Files:**
+
+- Create module: `app/src/Chat/`
+- Create view: `app/resources/views/chat/show.blade.php`
+- Test: `app/tests/Feature/Chat/ConversationTest.php`
+
+Acceptance:
+
+- Only matched users can open conversation.
+- User can send text message.
+- Empty conversation state is shown before first message.
+- Message composer rejects empty or overlong text.
+
+Steps:
+
+- [ ] Write feature tests for access control and sending.
+- [ ] Add chat routes, controller, command, handler, and service.
+- [ ] Add conversation view and message partials.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add matched chat`.
+
+### Story 5.3: Unmatch
+
+**Files:**
+
+- Add unmatch command/service.
+- Add modal/action from match list and chat.
+- Test: `app/tests/Feature/Connection/UnmatchTest.php`
+
+Acceptance:
+
+- Either user can unmatch.
+- Unmatched connection disappears from active match list.
+- Chat becomes inaccessible except for admin moderation metadata.
+
+Steps:
+
+- [ ] Write feature tests for unmatch flow.
+- [ ] Add service and route.
+- [ ] Add confirmation modal.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add unmatch flow`.
+
+### Epic 5 Review Gate
+
+- [ ] Full tests, PHPStan, style check.
+- [ ] Browser smoke: match two users, send messages, unmatch, confirm chat access denied.
+
+## Epic 6: AI Szárnysegéd
+
+**Goal:** Add opt-in assistant starter messages for empty matched conversations.
+
+### Story 6.1: AI Szárnysegéd Settings
+
+**Files:**
+
+- Modify Profile and Preference settings views.
+- Create Assistant module: `app/src/Assistant/`
+- Test: `app/tests/Feature/Assistant/AiWingmanSettingsTest.php`
+
+Acceptance:
+
+- User can enable/disable AI Szárnysegéd on own profile.
+- User can exclude AI-enabled profiles from discovery.
+- Discovery respects the exclusion.
+
+Steps:
+
+- [ ] Write feature tests for toggles and discovery exclusion.
+- [ ] Add profile setting command/service.
+- [ ] Wire preference exclusion into candidate query.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add ai wingman settings`.
+
+### Story 6.2: Assistant Starter Generator
+
+**Files:**
+
+- Create `AssistantStarterService`.
+- Create template/value object classes under `app/src/Assistant/`.
+- Test: `app/tests/Unit/Assistant/AssistantStarterServiceTest.php`
+
+Acceptance:
+
+- Service builds one safe humorous message from visible non-sensitive profile facts.
+- Service never uses missing facts.
+- Service refuses unsafe context.
+- Service produces deterministic text in MVP.
+
+Steps:
+
+- [ ] Write unit tests for normal, missing-fact, and unsafe contexts.
+- [ ] Add context DTO and template selection service.
+- [ ] Add safety guard rules.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add ai wingman starter generation`.
+
+### Story 6.3: Scheduled Assistant Posting
+
+**Files:**
+
+- Add Laravel command or queued job.
+- Modify `app/app/Console/Kernel.php`.
+- Test: `app/tests/Feature/Assistant/AiWingmanPostingTest.php`
+
+Acceptance:
+
+- Empty matched conversations receive one assistant message after waiting period.
+- Conversations with user messages are skipped.
+- Assistant never posts twice to same conversation.
+- Assistant message is rendered as AI Szárnysegéd in chat.
+
+Steps:
+
+- [ ] Write feature tests using time travel.
+- [ ] Add command/job and domain service.
+- [ ] Register schedule.
+- [ ] Add assistant message bubble partial.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add ai wingman scheduled starter`.
+
+### Epic 6 Review Gate
+
+- [ ] Full tests, PHPStan, style check.
+- [ ] Manual smoke: create match, wait/trigger command, confirm assistant message appears once.
+- [ ] Review assistant copy against design brief and safety rules.
+
+## Epic 7: Safety and Account Controls
+
+**Goal:** Add report, block, hide, deactivate, and delete flows.
+
+### Story 7.1: Reports
+
+**Files:**
+
+- Create module: `app/src/Safety/`
+- Create views for report modal/confirmation.
+- Test: `app/tests/Feature/Safety/ReportFlowTest.php`
+
+Acceptance:
+
+- User can report profile, message, or assistant message.
+- Report stores category and optional note.
+- User sees confirmation.
+
+Steps:
+
+- [ ] Write feature tests for each report target type.
+- [ ] Add report command/service.
+- [ ] Add report routes and modal partials.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add report flow`.
+
+### Story 7.2: Blocks
+
+**Files:**
+
+- Add block command/service.
+- Modify discovery, match list, chat authorization.
+- Test: `app/tests/Feature/Safety/BlockFlowTest.php`
+
+Acceptance:
+
+- Blocking prevents discovery, matching, and messaging in both directions.
+- Existing matched connection becomes blocked.
+- Blocked user cannot access chat through direct URL.
+
+Steps:
+
+- [ ] Write feature tests for block effects.
+- [ ] Add block service and route.
+- [ ] Update candidate query and chat authorization.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add user blocking`.
+
+### Story 7.3: Account Deactivation and Deletion
+
+**Files:**
+
+- Add account settings views and services.
+- Test: `app/tests/Feature/User/AccountLifecycleTest.php`
+
+Acceptance:
+
+- User can hide profile from discovery.
+- User can deactivate account.
+- User can request deletion.
+- Deactivated/deleted accounts are excluded from discovery and chat entry points.
+
+Steps:
+
+- [ ] Write feature tests for account lifecycle.
+- [ ] Add settings routes and controllers.
+- [ ] Add services updating account/profile status.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add account lifecycle controls`.
+
+### Epic 7 Review Gate
+
+- [ ] Full tests, PHPStan, style check.
+- [ ] Browser smoke report/block/deactivate flows.
+- [ ] Security review: blocked users cannot access direct URLs.
+
+## Epic 8: Admin Moderation and Metrics
+
+**Goal:** Give admins enough operational control for launch.
+
+### Story 8.1: Report Queue
+
+**Files:**
+
+- Extend existing admin user module or create `app/src/Safety/Presentation/Controller/Admin/`.
+- Create views under `app/resources/views/admin/reports/`.
+- Test: `app/tests/Feature/Admin/ReportQueueTest.php`
+
+Acceptance:
+
+- Admin can list open reports.
+- Admin can view report detail with safe context.
+- Non-admin users cannot access report queue.
+
+Steps:
+
+- [ ] Write feature tests for admin and non-admin access.
+- [ ] Add report queue query/controller/views.
+- [ ] Add admin navigation link.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add admin report queue`.
+
+### Story 8.2: Moderation Actions and Audit Log
+
+**Files:**
+
+- Add moderation command/services.
+- Add audit log query/views.
+- Test: `app/tests/Feature/Admin/ModerationActionTest.php`
+
+Acceptance:
+
+- Admin can resolve report, hide profile, suspend user, ban user, restore user.
+- Every action records audit log.
+- Report status updates include reviewer and resolution.
+
+Steps:
+
+- [ ] Write feature tests for moderation actions and audit log.
+- [ ] Add services and routes.
+- [ ] Add confirmation forms.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add moderation actions and audit logs`.
+
+### Story 8.3: Metrics Dashboard
+
+**Files:**
+
+- Create `app/src/Metrics/`
+- Create admin metrics view.
+- Test: `app/tests/Feature/Admin/MetricsDashboardTest.php`
+
+Acceptance:
+
+- Dashboard shows registration, completed profile, active user, match, first message, report, block, unmatch, and assistant metrics.
+- Metrics are aggregated from `MetricEvent`.
+
+Steps:
+
+- [ ] Write feature test with seeded metric events.
+- [ ] Add metric recording service used by key domain services.
+- [ ] Add dashboard query/controller/view.
+- [ ] Run targeted tests.
+- [ ] Commit: `feat: add admin metrics dashboard`.
+
+### Epic 8 Review Gate
+
+- [ ] Full tests, PHPStan, style check.
+- [ ] Browser smoke admin report queue, moderation action, audit log, metrics.
+- [ ] Verify non-admin access denied for all admin routes.
+
+## Epic 9: Design-Readiness and Launch Polish
+
+**Goal:** Align UI with Figma brief and prepare product for the later design pass.
+
+### Story 9.1: Shared UI Components
+
+**Files:**
+
+- Create Blade partials under `app/resources/views/components/`.
+- Modify user-facing views to use shared partials.
+- Test: existing feature tests plus snapshot-level assertions where practical.
+
+Acceptance:
+
+- Profile card, form errors, status badges, empty states, assistant bubble, and confirmation modals are reusable.
+- UI copy matches design brief.
+
+Steps:
+
+- [ ] Inventory duplicated UI fragments.
+- [ ] Extract profile card partial.
+- [ ] Extract status badge partial.
+- [ ] Extract confirmation modal partial.
+- [ ] Extract assistant message partial.
+- [ ] Run affected feature tests.
+- [ ] Commit: `refactor: extract dating ui components`.
+
+### Story 9.2: Accessibility and Copy Pass
+
+**Files:**
+
+- Modify Blade views and CSS.
+- Test: manual browser review plus existing feature tests.
+
+Acceptance:
+
+- Form labels are explicit.
+- Destructive actions require confirmation.
+- Focus states are visible.
+- Empty states tell the user the next useful action.
+
+Steps:
+
+- [ ] Review all MVP screens against design brief.
+- [ ] Fix missing labels and ambiguous buttons.
+- [ ] Add helper text for sensitive and AI settings.
+- [ ] Run full tests.
+- [ ] Commit: `polish: improve dating app ux copy`.
+
+### Story 9.3: Final Definition of Done
+
+**Files:**
+
+- Modify docs only if implementation decisions changed.
+- Test: full suite and smoke checks.
+
+Acceptance:
+
+- Product scope, technical spec, and design brief match implemented behavior.
+- All required checks pass.
+- Launch risks are documented.
+
+Steps:
+
+- [ ] Run `docker compose exec php composer test`.
+- [ ] Run `docker compose exec php composer phpstan`.
+- [ ] Run `docker compose exec php composer cs-check`.
+- [ ] Run `docker compose exec php php artisan route:list`.
+- [ ] Browser smoke: onboarding, discovery, match, chat, assistant trigger, report, block, admin moderation.
+- [ ] Update docs for any intentional behavior differences.
+- [ ] Commit: `docs: align mvp implementation notes`.
+
+## Final Review Checklist
+
+- [ ] Registration and login work.
+- [ ] Profile onboarding and editing work.
+- [ ] Incomplete/hidden/moderated profiles do not appear in discovery.
+- [ ] Preferences filter discovery correctly.
+- [ ] AI Szárnysegéd exclusion filter works.
+- [ ] Accept/reject decisions work.
+- [ ] Mutual accept creates match and conversation.
+- [ ] Chat is matched-only.
+- [ ] AI Szárnysegéd posts once into eligible empty conversations.
+- [ ] Report, block, unmatch, deactivate, and delete flows work.
+- [ ] Admin report queue, moderation actions, audit logs, and metrics work.
+- [ ] All MVP screens have enough structure for Figma refinement.
+- [ ] No payment, boost, premium, video, or push-notification code is introduced.
+
+## Execution Recommendation
+
+Use subagent-driven development. Dispatch one subagent per story or small story
+cluster, then review after each epic. Keep commits story-sized. Do not start the
+next epic until the current epic review gate passes.
