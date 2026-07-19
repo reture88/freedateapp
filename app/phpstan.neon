@@ -1,0 +1,29 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+        - bootstrap
+        - config
+        - database
+        - routes
+        - src
+        - public/index.php
+    excludePaths:
+        analyse:
+            - bootstrap/cache/*
+            - storage/*
+            - vendor/*
+    ignoreErrors:
+        -
+            # Larastan infers Request::user() as non-nullable here; it genuinely
+            # can be null for unauthenticated API requests, so the nullsafe stays.
+            message: '#Using nullsafe property access#'
+            path: app/Providers/RouteServiceProvider.php
+        -
+            # Seeders run via `artisan db:seed`, never behind cached production
+            # config, so reading env() directly for seed-only defaults is fine.
+            identifier: larastan.noEnvCallsOutsideOfConfig
+            path: database/seeders/*
