@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -41,5 +42,13 @@ class User extends Authenticatable
     public function addresses(): HasMany
     {
         return $this->hasMany(UserAddress::class);
+    }
+
+    /**
+     * @return HasOne<DatingProfile, $this>
+     */
+    public function datingProfile(): HasOne
+    {
+        return $this->hasOne(DatingProfile::class);
     }
 }
