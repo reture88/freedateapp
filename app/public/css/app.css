@@ -714,6 +714,46 @@ select {
     min-height: 40px;
 }
 
+.profile-tag-picker {
+    margin-top: 24px;
+    padding-top: 22px;
+    border-top: 1px solid var(--color-border);
+}
+
+.profile-tag-group {
+    margin: 16px 0;
+    padding: 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.profile-tag-group legend {
+    padding: 0 6px;
+    font-weight: 700;
+}
+
+.profile-tag-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 10px;
+}
+
+.profile-tag-option {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 10px;
+    border-radius: 6px;
+    background: var(--color-surface-muted);
+    font-weight: 400;
+}
+
+.profile-tag-option span {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 .conversation-header {
     display: flex;
     align-items: center;

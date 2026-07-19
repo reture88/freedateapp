@@ -24,6 +24,8 @@ final readonly class SaveDatingProfileCommand implements CommandInterface, SelfC
         public string $relationshipIntent,
         public ?string $bio,
         public bool $aiWingmanEnabled,
+        /** @var array<int, string> */
+        public array $profileTags,
     ) {
     }
 
@@ -45,6 +47,7 @@ final readonly class SaveDatingProfileCommand implements CommandInterface, SelfC
             (string) $payload['relationship_intent'],
             isset($payload['bio']) && '' !== $payload['bio'] ? (string) $payload['bio'] : null,
             (bool) ($payload['ai_wingman_enabled'] ?? false),
+            self::profileTagsFromPayload($payload),
         );
     }
 
@@ -68,5 +71,44 @@ final readonly class SaveDatingProfileCommand implements CommandInterface, SelfC
             'ai_wingman_enabled' => 'nullable|boolean',
             'privacy_consent' => 'required|accepted',
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     *
+     * @return array<int, string>
+     */
+    private static function profileTagsFromPayload(array $payload): array
+    {
+        $normalized = [];
+        $allowedVisibilities = ['public', 'matches_only', 'private_matching'];
+        $profileTags = $payload['profile_tags'] ?? [];
+
+        if (is_array($profileTags)) {
+            foreach ($profileTags as $tagId => $visibility) {
+                if (!in_array($visibility, $allowedVisibilities, true)) {
+                    continue;
+                }
+
+                $normalized[(int) $tagId] = (string) $visibility;
+            }
+        }
+
+        $selectedTags = $payload['selected_profile_tags'] ?? [];
+        $visibilityMap = $payload['profile_tag_visibility'] ?? [];
+
+        if (is_array($selectedTags) && is_array($visibilityMap)) {
+            foreach ($selectedTags as $tagId) {
+                $visibility = $visibilityMap[(string) $tagId] ?? 'public';
+
+                if (!in_array($visibility, $allowedVisibilities, true)) {
+                    $visibility = 'public';
+                }
+
+                $normalized[(int) $tagId] = (string) $visibility;
+            }
+        }
+
+        return array_slice($normalized, 0, 20, true);
     }
 }

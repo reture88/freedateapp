@@ -84,6 +84,39 @@
                 I understand my visible profile details can be used for matching and discovery.
             </label>
 
+            @if ($tagCategories->isNotEmpty())
+                <section class="profile-tag-picker">
+                    <h2>Profile interests</h2>
+                    <p class="muted">Choose public interests or keep some private for matching only.</p>
+                    @php($selectedTags = $profile ? $profile->tags->keyBy('id') : collect())
+
+                    @foreach ($tagCategories as $category)
+                        <fieldset class="profile-tag-group">
+                            <legend>{{ $category->label }}</legend>
+                            <div class="profile-tag-options">
+                                @foreach ($category->tags as $tag)
+                                    @php($selectedTag = $selectedTags->get($tag->getKey()))
+                                    @php($oldSelectedTags = old('selected_profile_tags'))
+                                    @php($oldVisibility = old('profile_tag_visibility.' . $tag->getKey(), $selectedTag?->pivot?->visibility))
+                                    @php($isChecked = is_array($oldSelectedTags) ? in_array((string) $tag->getKey(), $oldSelectedTags, true) : (bool) $selectedTag)
+                                    <label class="profile-tag-option">
+                                        <span>
+                                            <input type="checkbox" name="selected_profile_tags[]" value="{{ $tag->getKey() }}" @checked($isChecked)>
+                                            {{ $tag->label }}
+                                        </span>
+                                        <select name="profile_tag_visibility[{{ $tag->getKey() }}]">
+                                            @foreach (['public' => 'Public', 'matches_only' => 'Matches only', 'private_matching' => 'Private matching'] as $value => $label)
+                                                <option value="{{ $value }}" @selected($oldVisibility === $value)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </fieldset>
+                    @endforeach
+                </section>
+            @endif
+
             <button type="submit">Save dating profile</button>
         </form>
 

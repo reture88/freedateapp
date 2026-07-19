@@ -38,7 +38,26 @@ final class SaveDatingProfileOnboardingService
         ]);
 
         $this->defaultPreferenceService->handle($profile);
+        $this->syncTags($profile, $command->profileTags);
 
         return $profile;
+    }
+
+    /**
+     * @param array<int, string> $profileTags
+     */
+    private function syncTags(DatingProfile $profile, array $profileTags): void
+    {
+        $syncPayload = [];
+        $sortOrder = 0;
+
+        foreach ($profileTags as $tagId => $visibility) {
+            $syncPayload[$tagId] = [
+                'visibility' => $visibility,
+                'sort_order' => $sortOrder++,
+            ];
+        }
+
+        $profile->tags()->sync($syncPayload);
     }
 }
