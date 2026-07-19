@@ -5,6 +5,7 @@
 /app/node_modules
 /app/vendor
 /app/public/build
+/app/public/storage
 /app/public/*.log
 /app/bootstrap/cache/*
 !/app/bootstrap/cache/.gitkeep

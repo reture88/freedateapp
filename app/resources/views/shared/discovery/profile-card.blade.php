@@ -1,8 +1,8 @@
-@php($primaryPhoto = $candidate->photos()->where('is_primary', true)->orderBy('sort_order')->first())
+@php($primaryPhoto = $candidate->photos()->where('is_primary', true)->orderBy('sort_order')->first() ?? $candidate->photos()->orderBy('sort_order')->first())
 
 <article class="panel">
     @if ($primaryPhoto)
-        <img src="{{ $primaryPhoto->path }}" alt="{{ $candidate->display_name }} profile photo">
+        <img src="{{ $primaryPhoto->publicUrl() }}" alt="{{ $candidate->display_name }} profile photo">
     @endif
     <h1>{{ $candidate->display_name }}</h1>
     <p>{{ $candidate->birthdate->age }} • {{ $candidate->city }}, {{ $candidate->country_code }}</p>

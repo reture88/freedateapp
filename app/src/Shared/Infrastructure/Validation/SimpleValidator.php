@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Validation;
 
+use Illuminate\Http\UploadedFile;
+
 final class SimpleValidator implements ValidatorInterface
 {
     /**
@@ -49,6 +51,22 @@ final class SimpleValidator implements ValidatorInterface
 
                 if ('date' === $rule && null !== $value && false === strtotime((string) $value)) {
                     $errors[$field][] = 'The field must be a valid date.';
+                }
+
+                if ('file' === $rule && null !== $value && !$value instanceof UploadedFile) {
+                    $errors[$field][] = 'The field must be a file.';
+                }
+
+                if ('image' === $rule && $value instanceof UploadedFile && !str_starts_with((string) $value->getMimeType(), 'image/')) {
+                    $errors[$field][] = 'The field must be an image.';
+                }
+
+                if (str_starts_with($rule, 'max_file_kb:') && $value instanceof UploadedFile) {
+                    $maximum = (int) substr($rule, 12);
+
+                    if ($value->getSize() > $maximum * 1024) {
+                        $errors[$field][] = sprintf('The file must not be larger than %d KB.', $maximum);
+                    }
                 }
 
                 if (str_starts_with($rule, 'max:') && null !== $value && strlen((string) $value) > (int) substr($rule, 4)) {

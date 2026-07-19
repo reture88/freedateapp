@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ProfilePhoto extends Model
 {
@@ -28,5 +30,14 @@ class ProfilePhoto extends Model
     public function datingProfile(): BelongsTo
     {
         return $this->belongsTo(DatingProfile::class);
+    }
+
+    public function publicUrl(): string
+    {
+        if (Str::startsWith($this->path, ['http://', 'https://'])) {
+            return $this->path;
+        }
+
+        return Storage::disk('public')->url($this->path);
     }
 }

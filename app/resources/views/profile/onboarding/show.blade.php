@@ -86,5 +86,44 @@
 
             <button type="submit">Save dating profile</button>
         </form>
+
+        @if ($profile)
+            <section class="profile-photo-manager">
+                <h2>Profile photos</h2>
+                <p class="muted">Upload up to 7 photos and choose which one appears first in discovery.</p>
+
+                <form method="POST" action="{{ route('dating-profile.photos.upload') }}" enctype="multipart/form-data" class="stack">
+                    @csrf
+                    <label>
+                        Add photo
+                        <input type="file" name="photo" accept="image/*" required>
+                    </label>
+                    @error('photo')
+                        <p class="field-error">{{ $message }}</p>
+                    @enderror
+                    <button type="submit" class="button button--secondary">Upload photo</button>
+                </form>
+
+                @if ($profile->photos->isNotEmpty())
+                    <div class="profile-photo-grid">
+                        @foreach ($profile->photos->sortBy('sort_order') as $photo)
+                            <article class="profile-photo-card">
+                                <img src="{{ $photo->publicUrl() }}" alt="{{ $profile->display_name }} profile photo">
+                                <div class="profile-photo-card__footer">
+                                    @if ($photo->is_primary)
+                                        <span class="status-pill">Primary</span>
+                                    @else
+                                        <form method="POST" action="{{ route('dating-profile.photos.primary', ['photo' => $photo->getKey()]) }}">
+                                            @csrf
+                                            <button type="submit" class="button button--secondary">Make primary</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                @endif
+            </section>
+        @endif
     </section>
 @endsection

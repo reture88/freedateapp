@@ -673,6 +673,47 @@ select {
     width: auto;
 }
 
+.profile-photo-manager {
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-border);
+}
+
+.profile-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+}
+
+.profile-photo-card {
+    display: grid;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface-muted);
+}
+
+.profile-photo-card img,
+.profile-preview-photo {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+}
+
+.profile-preview-photo {
+    max-width: 260px;
+    margin-bottom: 18px;
+}
+
+.profile-photo-card__footer {
+    min-height: 40px;
+}
+
 .muted {
     color: var(--color-muted);
 }
