@@ -6,6 +6,7 @@ use App\Profile\Presentation\Controller\PreviewProfileController;
 use App\Profile\Presentation\Controller\SaveOnboardingController;
 use App\Profile\Presentation\Controller\ChoosePrimaryProfilePhotoController;
 use App\Profile\Presentation\Controller\ShowOnboardingController;
+use App\Profile\Presentation\Controller\ShowMatchedProfileController;
 use App\Profile\Presentation\Controller\UpdateVisibilityController;
 use App\Profile\Presentation\Controller\UploadProfilePhotoController;
 use Illuminate\Support\Facades\Route;
@@ -30,4 +31,7 @@ Route::middleware('auth')->group(static function (): void {
         ->name('dating-profile.visibility.update');
     Route::get('/dating-profile/preview', PreviewProfileController::class)
         ->name('dating-profile.preview');
+    Route::get('/profiles/{profile}', ShowMatchedProfileController::class)
+        ->whereNumber('profile')
+        ->name('profiles.show');
 });

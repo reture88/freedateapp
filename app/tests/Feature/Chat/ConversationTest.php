@@ -8,6 +8,7 @@ use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\DatingProfile;
 use App\Models\Message;
+use App\Models\ProfilePhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -72,6 +73,62 @@ final class ConversationTest extends TestCase
             ->assertSessionHasErrors(['body']);
 
         $this->assertSame(0, Message::query()->count());
+    }
+
+    public function test_conversation_shows_messages_oldest_to_newest_and_links_other_profile(): void
+    {
+        [$first, $second, $conversation] = $this->createMatchedConversation();
+        ProfilePhoto::query()->create([
+            'dating_profile_id' => $second->getKey(),
+            'path' => 'https://i.pravatar.cc/600?img=7',
+            'sort_order' => 0,
+            'is_primary' => true,
+            'moderation_status' => 'approved',
+        ]);
+
+        Message::query()->create([
+            'conversation_id' => $conversation->getKey(),
+            'sender_user_id' => $first->user_id,
+            'sender_type' => 'user',
+            'body' => 'First inserted message',
+            'created_at' => '2026-07-19 17:00:00',
+            'updated_at' => '2026-07-19 17:00:00',
+        ]);
+        Message::query()->create([
+            'conversation_id' => $conversation->getKey(),
+            'sender_user_id' => $second->user_id,
+            'sender_type' => 'user',
+            'body' => 'Second inserted message',
+            'created_at' => '2026-07-19 15:00:00',
+            'updated_at' => '2026-07-19 15:00:00',
+        ]);
+
+        $this->actingAs($first->user)
+            ->get(sprintf('/conversations/%d', $conversation->getKey()))
+            ->assertOk()
+            ->assertSeeInOrder(['First inserted message', 'Second inserted message'])
+            ->assertSee('https://i.pravatar.cc/600?img=7')
+            ->assertSee(sprintf('/profiles/%d', $second->getKey()));
+    }
+
+    public function test_matched_user_can_view_other_profile_from_chat(): void
+    {
+        [$first, $second] = $this->createMatchedConversation();
+
+        $this->actingAs($first->user)
+            ->get(sprintf('/profiles/%d', $second->getKey()))
+            ->assertOk()
+            ->assertSee($second->display_name);
+    }
+
+    public function test_unmatched_user_cannot_view_other_profile(): void
+    {
+        [, $second] = $this->createMatchedConversation();
+        $outsider = $this->createProfile('profile.outsider@example.com');
+
+        $this->actingAs($outsider->user)
+            ->get(sprintf('/profiles/%d', $second->getKey()))
+            ->assertForbidden();
     }
 
     /**

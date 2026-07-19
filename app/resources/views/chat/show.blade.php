@@ -4,27 +4,37 @@
 
 @section('content')
     <section class="panel">
-        <h1>{{ $conversationView->otherProfile->display_name }}</h1>
-        <form method="POST" action="{{ route('connections.unmatch', ['connection' => $conversationView->conversation->connection_id]) }}">
-            @csrf
-            @include('components.confirm-button', [
-                'label' => 'Unmatch',
-                'message' => 'Unmatch this person and close the chat?',
-            ])
-        </form>
-        <form method="POST" action="{{ route('blocks.submit') }}">
-            @csrf
-            <input type="hidden" name="blocked_user_id" value="{{ $conversationView->otherProfile->user_id }}">
-            <input type="hidden" name="reason_category" value="safety">
-            @include('components.confirm-button', [
-                'label' => 'Block user',
-                'message' => 'Block this user and close the chat?',
-            ])
-        </form>
+        @php($primaryPhoto = $conversationView->otherProfile->photos()->where('is_primary', true)->orderBy('sort_order')->first() ?? $conversationView->otherProfile->photos()->orderBy('sort_order')->first())
+        <header class="conversation-header">
+            <a href="{{ route('profiles.show', ['profile' => $conversationView->otherProfile->getKey()]) }}" class="conversation-header__profile">
+                @if ($primaryPhoto)
+                    <img src="{{ $primaryPhoto->publicUrl() }}" alt="{{ $conversationView->otherProfile->display_name }} profile photo">
+                @endif
+                <span>{{ $conversationView->otherProfile->display_name }}</span>
+            </a>
+            <div class="conversation-header__actions">
+                <form method="POST" action="{{ route('connections.unmatch', ['connection' => $conversationView->conversation->connection_id]) }}">
+                    @csrf
+                    @include('components.confirm-button', [
+                        'label' => 'Unmatch',
+                        'message' => 'Unmatch this person and close the chat?',
+                    ])
+                </form>
+                <form method="POST" action="{{ route('blocks.submit') }}">
+                    @csrf
+                    <input type="hidden" name="blocked_user_id" value="{{ $conversationView->otherProfile->user_id }}">
+                    <input type="hidden" name="reason_category" value="safety">
+                    @include('components.confirm-button', [
+                        'label' => 'Block user',
+                        'message' => 'Block this user and close the chat?',
+                    ])
+                </form>
+            </div>
+        </header>
 
         @include('shared.form-errors')
 
-        @forelse ($conversationView->conversation->messages()->orderBy('created_at')->get() as $message)
+        @forelse ($conversationView->conversation->messages()->orderBy('id')->get() as $message)
             @if ('assistant' === $message->sender_type)
                 @include('components.assistant-message', ['message' => $message])
             @else
