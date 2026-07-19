@@ -5,6 +5,10 @@
 @section('content')
     <section class="panel">
         <h1>{{ $conversationView->otherProfile->display_name }}</h1>
+        <form method="POST" action="{{ route('connections.unmatch', ['connection' => $conversationView->conversation->connection_id]) }}">
+            @csrf
+            <button type="submit">Unmatch</button>
+        </form>
 
         @include('shared.form-errors')
 
