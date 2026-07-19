@@ -6,6 +6,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class DatingProfile extends Model
 {
@@ -41,5 +43,37 @@ class DatingProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return HasMany<ProfilePhoto, $this>
+     */
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ProfilePhoto::class);
+    }
+
+    /**
+     * @return HasOne<ProfilePreference, $this>
+     */
+    public function preference(): HasOne
+    {
+        return $this->hasOne(ProfilePreference::class);
+    }
+
+    /**
+     * @return HasMany<DiscoveryDecision, $this>
+     */
+    public function discoveryDecisionsMade(): HasMany
+    {
+        return $this->hasMany(DiscoveryDecision::class, 'viewer_profile_id');
+    }
+
+    /**
+     * @return HasMany<DiscoveryDecision, $this>
+     */
+    public function discoveryDecisionsReceived(): HasMany
+    {
+        return $this->hasMany(DiscoveryDecision::class, 'target_profile_id');
     }
 }
