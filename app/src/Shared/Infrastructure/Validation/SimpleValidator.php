@@ -23,7 +23,7 @@ final class SimpleValidator implements ValidatorInterface
                     continue 2;
                 }
 
-                if ('required' === $rule && (null === $value || '' === $value)) {
+                if ('required' === $rule && (null === $value || '' === $value || [] === $value)) {
                     $errors[$field][] = 'The field is required.';
                 }
 
@@ -41,6 +41,10 @@ final class SimpleValidator implements ValidatorInterface
 
                 if ('numeric' === $rule && null !== $value && '' !== $value && !is_numeric($value)) {
                     $errors[$field][] = 'The field must be numeric.';
+                }
+
+                if ('array' === $rule && null !== $value && !is_array($value)) {
+                    $errors[$field][] = 'The field must be an array.';
                 }
 
                 if ('date' === $rule && null !== $value && false === strtotime((string) $value)) {
@@ -69,6 +73,39 @@ final class SimpleValidator implements ValidatorInterface
 
                     if ($numericValue < $minimum || $numericValue > $maximum) {
                         $errors[$field][] = sprintf('The field must be between %s and %s.', $minimum, $maximum);
+                    }
+                }
+
+                if (str_starts_with($rule, 'min:') && null !== $value && '' !== $value && is_numeric($value)) {
+                    $minimum = (float) substr($rule, 4);
+
+                    if ((float) $value < $minimum) {
+                        $errors[$field][] = sprintf('The field must be at least %s.', $minimum);
+                    }
+                }
+
+                if (str_starts_with($rule, 'max_value:') && null !== $value && '' !== $value && is_numeric($value)) {
+                    $maximum = (float) substr($rule, 10);
+
+                    if ((float) $value > $maximum) {
+                        $errors[$field][] = sprintf('The field must not be greater than %s.', $maximum);
+                    }
+                }
+
+                if (str_starts_with($rule, 'min_items:') && is_array($value)) {
+                    $minimum = (int) substr($rule, 10);
+
+                    if (count($value) < $minimum) {
+                        $errors[$field][] = sprintf('The field must contain at least %d items.', $minimum);
+                    }
+                }
+
+                if (str_starts_with($rule, 'lte:') && null !== $value && '' !== $value && is_numeric($value)) {
+                    $otherField = substr($rule, 4);
+                    $otherValue = $payload[$otherField] ?? null;
+
+                    if (is_numeric($otherValue) && (float) $value > (float) $otherValue) {
+                        $errors[$field][] = sprintf('The field must be less than or equal to %s.', $otherField);
                     }
                 }
 

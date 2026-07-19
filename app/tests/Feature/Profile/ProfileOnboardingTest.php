@@ -58,7 +58,8 @@ final class ProfileOnboardingTest extends TestCase
             ->get('/dating-profile/preview')
             ->assertOk()
             ->assertSee('Rafi')
-            ->assertSee('Coffee, walks, and dry humor.');
+            ->assertSee('Coffee, walks, and dry humor.')
+            ->assertSee('Edit dating preferences');
     }
 
     public function test_incomplete_or_invalid_profile_data_is_rejected(): void

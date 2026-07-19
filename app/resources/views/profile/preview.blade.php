@@ -17,5 +17,6 @@
             <button type="submit">{{ $profile->visibility_status === 'visible' ? 'Hide profile' : 'Show profile' }}</button>
         </form>
         <a href="{{ route('dating-profile.onboarding.show') }}">Edit dating profile</a>
+        <a href="{{ route('dating-preferences.edit') }}">Edit dating preferences</a>
     </section>
 @endsection

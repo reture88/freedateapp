@@ -6,11 +6,16 @@ namespace App\Profile\DomainService;
 
 use App\Models\DatingProfile;
 use App\Models\User;
+use App\Preference\DomainService\EnsureDefaultPreferenceService;
 use App\Profile\RequestHandler\SaveDatingProfile\SaveDatingProfileCommand;
 use Illuminate\Support\Carbon;
 
 final class SaveDatingProfileOnboardingService
 {
+    public function __construct(private EnsureDefaultPreferenceService $defaultPreferenceService)
+    {
+    }
+
     public function handle(SaveDatingProfileCommand $command): DatingProfile
     {
         $user = User::query()->findOrFail($command->userId);
@@ -31,6 +36,8 @@ final class SaveDatingProfileOnboardingService
             'ai_wingman_enabled' => $command->aiWingmanEnabled,
             'completed_at' => Carbon::now(),
         ]);
+
+        $this->defaultPreferenceService->handle($profile);
 
         return $profile;
     }
