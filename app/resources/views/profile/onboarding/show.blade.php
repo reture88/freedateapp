@@ -63,7 +63,7 @@
             <label>
                 Relationship intent
                 <select name="relationship_intent" required>
-                    @foreach (['long_term' => 'Long-term relationship', 'casual' => 'Casual dating', 'friendship' => 'Friendship first'] as $value => $label)
+                    @foreach (['long_term' => 'Long-term relationship', 'short_term' => 'Short-term dating', 'friendship' => 'Friendship first', 'unsure' => 'Not sure yet'] as $value => $label)
                         <option value="{{ $value }}" @selected(old('relationship_intent', $profile?->relationship_intent) === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
