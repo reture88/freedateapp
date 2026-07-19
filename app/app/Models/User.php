@@ -17,6 +17,7 @@ class User extends Authenticatable
         'role',
         'is_admin',
         'is_active',
+        'deletion_requested_at',
     ];
 
     protected $hidden = [
@@ -27,6 +28,7 @@ class User extends Authenticatable
     protected $casts = [
         'is_admin' => 'boolean',
         'is_active' => 'boolean',
+        'deletion_requested_at' => 'datetime',
     ];
 
     public function canAccessAdminPanel(): bool

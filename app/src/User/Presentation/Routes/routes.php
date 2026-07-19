@@ -3,7 +3,9 @@
 declare(strict_types=1);
 
 use App\User\Presentation\Controller\ChangePasswordController;
+use App\User\Presentation\Controller\DeactivateAccountController;
 use App\User\Presentation\Controller\ProfileController;
+use App\User\Presentation\Controller\RequestAccountDeletionController;
 use App\User\Presentation\Controller\SaveAddressController;
 use App\User\Presentation\Controller\UpdateProfileController;
 use App\User\Presentation\Controller\Admin\AdminUserIndexController;
@@ -18,6 +20,8 @@ Route::middleware('auth')->group(static function (): void {
     Route::post('/profile/addresses/{type}', SaveAddressController::class)
         ->whereIn('type', ['shipping', 'billing'])
         ->name('profile.address.save');
+    Route::post('/account/deactivate', DeactivateAccountController::class)->name('account.deactivate');
+    Route::post('/account/request-deletion', RequestAccountDeletionController::class)->name('account.request-deletion');
 });
 
 Route::prefix('admin/users')

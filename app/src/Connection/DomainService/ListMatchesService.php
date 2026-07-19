@@ -26,7 +26,7 @@ final class ListMatchesService
                     ->where('profile_one_id', $viewerProfile->getKey())
                     ->orWhere('profile_two_id', $viewerProfile->getKey());
             })
-            ->with(['profileOne', 'profileTwo', 'conversation'])
+            ->with(['profileOne.user', 'profileTwo.user', 'conversation'])
             ->orderByDesc('matched_at')
             ->get();
 
@@ -38,6 +38,10 @@ final class ListMatchesService
                 : $connection->profileOne;
 
             if ('visible' !== $otherProfile->visibility_status || 'approved' !== $otherProfile->moderation_status) {
+                continue;
+            }
+
+            if (!$otherProfile->user->is_active || null !== $otherProfile->user->deletion_requested_at) {
                 continue;
             }
 

@@ -30,6 +30,14 @@ final class ShowConversationService
             ? $connection->profileTwo
             : $connection->profileOne;
 
+        if (!$viewerProfile->user->is_active || null !== $viewerProfile->user->deletion_requested_at) {
+            throw new \InvalidArgumentException('Conversation is not available.');
+        }
+
+        if (!$otherProfile->user->is_active || null !== $otherProfile->user->deletion_requested_at) {
+            throw new \InvalidArgumentException('Conversation is not available.');
+        }
+
         return new ConversationView($conversation, $otherProfile);
     }
 }

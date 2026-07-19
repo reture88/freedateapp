@@ -37,6 +37,9 @@ final class FindNextCandidateService
             ->whereKeyNot($viewerProfile->getKey())
             ->whereNotIn('id', $excludedProfileIds)
             ->whereNotIn('user_id', $blockedUserIds)
+            ->whereHas('user', static function ($query): void {
+                $query->where('is_active', true)->whereNull('deletion_requested_at');
+            })
             ->whereNotNull('completed_at')
             ->where('visibility_status', 'visible')
             ->where('moderation_status', 'approved')
