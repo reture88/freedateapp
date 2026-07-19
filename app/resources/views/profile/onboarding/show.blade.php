@@ -1,15 +1,15 @@
 @extends('layouts.public')
 
-@section('title', 'Dating profile onboarding')
+@section('title', $profile ? 'Edit dating profile' : 'Dating profile onboarding')
 
 @section('content')
     <section class="panel">
-        <h1>Dating profile onboarding</h1>
+        <h1>{{ $profile ? 'Edit dating profile' : 'Dating profile onboarding' }}</h1>
         <p>Create the profile other people will see in discovery.</p>
 
         @include('shared.form-errors')
 
-        <form method="POST" action="{{ route('dating-profile.onboarding.save') }}" class="stack">
+        <form method="POST" action="{{ $profile ? route('dating-profile.update') : route('dating-profile.onboarding.save') }}" class="stack">
             @csrf
 
             <label>

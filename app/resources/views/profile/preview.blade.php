@@ -11,6 +11,11 @@
         @if ($profile->ai_wingman_enabled)
             <p>AI Szarnyseged enabled</p>
         @endif
+        <form method="POST" action="{{ route('dating-profile.visibility.update') }}">
+            @csrf
+            <input type="hidden" name="visibility_status" value="{{ $profile->visibility_status === 'visible' ? 'hidden' : 'visible' }}">
+            <button type="submit">{{ $profile->visibility_status === 'visible' ? 'Hide profile' : 'Show profile' }}</button>
+        </form>
         <a href="{{ route('dating-profile.onboarding.show') }}">Edit dating profile</a>
     </section>
 @endsection

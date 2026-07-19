@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Profile\Presentation\Controller\PreviewProfileController;
 use App\Profile\Presentation\Controller\SaveOnboardingController;
 use App\Profile\Presentation\Controller\ShowOnboardingController;
+use App\Profile\Presentation\Controller\UpdateVisibilityController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(static function (): void {
@@ -12,6 +13,12 @@ Route::middleware('auth')->group(static function (): void {
         ->name('dating-profile.onboarding.show');
     Route::post('/dating-profile/onboarding', SaveOnboardingController::class)
         ->name('dating-profile.onboarding.save');
+    Route::get('/dating-profile/edit', ShowOnboardingController::class)
+        ->name('dating-profile.edit');
+    Route::post('/dating-profile/edit', SaveOnboardingController::class)
+        ->name('dating-profile.update');
+    Route::post('/dating-profile/visibility', UpdateVisibilityController::class)
+        ->name('dating-profile.visibility.update');
     Route::get('/dating-profile/preview', PreviewProfileController::class)
         ->name('dating-profile.preview');
 });
