@@ -8,6 +8,7 @@
         <nav class="topbar__nav" aria-label="Admin navigacio">
             <a href="{{ route('home') }}">Public oldal</a>
             <a href="{{ route('admin.users.index') }}">Felhasznalok</a>
+            <a href="{{ route('admin.reports.index') }}">Reportok</a>
             <form method="POST" action="{{ route('auth.logout') }}">
                 @csrf
                 <button type="submit" class="link-button">Kilepes</button>
