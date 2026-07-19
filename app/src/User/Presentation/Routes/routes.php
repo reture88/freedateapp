@@ -9,6 +9,7 @@ use App\User\Presentation\Controller\RequestAccountDeletionController;
 use App\User\Presentation\Controller\SaveAddressController;
 use App\User\Presentation\Controller\UpdateProfileController;
 use App\User\Presentation\Controller\Admin\AdminUserIndexController;
+use App\User\Presentation\Controller\Admin\AdminUserModerationController;
 use App\User\Presentation\Controller\Admin\AdminUserShowController;
 use App\User\Presentation\Controller\Admin\AdminUserUpdateController;
 use Illuminate\Support\Facades\Route;
@@ -29,5 +30,6 @@ Route::prefix('admin/users')
     ->group(static function (): void {
         Route::get('/', AdminUserIndexController::class)->name('admin.users.index');
         Route::get('/{user}', AdminUserShowController::class)->name('admin.users.show');
+        Route::post('/{user}/moderation', AdminUserModerationController::class)->name('admin.users.moderation');
         Route::post('/{user}', AdminUserUpdateController::class)->name('admin.users.update');
     });

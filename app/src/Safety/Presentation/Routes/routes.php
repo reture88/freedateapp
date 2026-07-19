@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Safety\Presentation\Controller\BlockUserController;
 use App\Safety\Presentation\Controller\Admin\AdminReportIndexController;
+use App\Safety\Presentation\Controller\Admin\AdminReportActionController;
 use App\Safety\Presentation\Controller\Admin\AdminReportShowController;
 use App\Safety\Presentation\Controller\SubmitReportController;
 use Illuminate\Support\Facades\Route;
@@ -20,4 +21,5 @@ Route::prefix('admin/reports')
     ->group(static function (): void {
         Route::get('/', AdminReportIndexController::class)->name('admin.reports.index');
         Route::get('/{report}', AdminReportShowController::class)->name('admin.reports.show');
+        Route::post('/{report}/actions', AdminReportActionController::class)->name('admin.reports.actions');
     });

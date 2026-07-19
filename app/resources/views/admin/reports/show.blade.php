@@ -18,5 +18,14 @@
             <div><dt>Reporter</dt><dd>{{ $report->reporter?->email }}</dd></div>
             <div><dt>Note</dt><dd>{{ $report->note ?? 'No note.' }}</dd></div>
         </dl>
+
+        @if ('open' === $report->status)
+            <form method="POST" action="{{ route('admin.reports.actions', $report) }}">
+                @csrf
+                <input type="hidden" name="action" value="hide_profile">
+                <input type="hidden" name="resolution" value="profile_hidden">
+                <button type="submit">Hide profile and resolve</button>
+            </form>
+        @endif
     </section>
 @endsection
