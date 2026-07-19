@@ -9,8 +9,12 @@
     <p>{{ $candidate->relationship_intent }}</p>
     <p>{{ $candidate->bio }}</p>
 
-    <form method="POST" action="#" class="stack">
+    <form method="POST" action="{{ route('discovery.accept', ['targetProfile' => $candidate->getKey()]) }}" class="stack">
+        @csrf
         <button type="submit">Accept</button>
+    </form>
+    <form method="POST" action="{{ route('discovery.reject', ['targetProfile' => $candidate->getKey()]) }}" class="stack">
+        @csrf
         <button type="submit">Reject</button>
     </form>
 </article>
