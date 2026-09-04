@@ -46,6 +46,22 @@ queries rather than embedding business logic. Filament resources may use
 Eloquent for simple read/list surfaces, but moderation actions and domain
 mutations must call services or command handlers.
 
+Current implementation status:
+
+- Livewire, Filament, and Reverb packages are installed.
+- Docker includes PHP `intl` and `pcntl` extensions required by Filament and
+  Reverb.
+- Docker Compose runs a dedicated `reverb` service exposed locally on port
+  `8081`.
+- Livewire powers preferences, discovery accept/reject, match list rendering,
+  and the conversation panel.
+- Chat messages are loaded oldest-to-newest by `created_at` and `id`, so the
+  newest message appears at the bottom.
+- Filament has a registered admin panel foundation at `/admin`; domain-specific
+  resources are still planned.
+- Reverb is configured and running, but domain broadcast events and Livewire
+  listeners are still planned.
+
 ## MVP Module Map
 
 ### Profile
