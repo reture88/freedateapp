@@ -6,13 +6,15 @@ namespace App\Safety\Presentation\Controller\Admin;
 
 use App\Models\Report;
 use App\Models\User;
-use App\Safety\DomainService\AdminModerateReportService;
+use App\Safety\RequestHandler\AdminModerateReport\AdminModerateReportCommand;
+use App\Shared\Dto\ValueObject\Context\SystemContext;
+use App\Shared\Infrastructure\Bus\Command\CommandBusInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 final readonly class AdminReportActionController
 {
-    public function __construct(private AdminModerateReportService $service)
+    public function __construct(private CommandBusInterface $commandBus)
     {
     }
 
@@ -20,7 +22,12 @@ final readonly class AdminReportActionController
     {
         /** @var User $user */
         $user = $request->user();
-        $this->service->handle($user, $report, (string) $request->input('action'), $request->input('resolution') ? (string) $request->input('resolution') : null);
+        $this->commandBus->dispatchPayload(AdminModerateReportCommand::class, [
+            'actor_user_id' => $user->getKey(),
+            'report_id' => $report->getKey(),
+            'action' => $request->input('action'),
+            'resolution' => $request->input('resolution'),
+        ], new SystemContext((string) $user->getKey(), $request->ip()));
 
         return redirect(route('admin.reports.show', $report));
     }

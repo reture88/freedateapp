@@ -810,9 +810,9 @@ Steps:
 - [x] Configure a Filament admin panel.
 - [x] Add read-only resources for users, profiles, reports, audit logs, and
   metrics.
-- [ ] Add guarded moderation actions.
+- [x] Add guarded moderation actions.
 - [x] Add feature tests or policy tests for authorization.
-- [ ] Commit: `feat: add filament moderation panel`.
+- [x] Commit: `feat: add filament moderation panel`.
 
 ### Story 10.4: Reverb Realtime UX
 

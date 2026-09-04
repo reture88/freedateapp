@@ -2,6 +2,12 @@
 
 namespace App\Filament\Resources\Reports\Tables;
 
+use App\Models\Report;
+use App\Models\User;
+use App\Safety\RequestHandler\AdminModerateReport\AdminModerateReportCommand;
+use App\Shared\Dto\ValueObject\Context\SystemContext;
+use App\Shared\Infrastructure\Bus\Command\CommandBusInterface;
+use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -65,7 +71,32 @@ class ReportsTable
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('resolve')
+                    ->requiresConfirmation()
+                    ->visible(static fn (Report $record): bool => 'open' === $record->status)
+                    ->action(static fn (Report $record): mixed => self::dispatchModerationAction($record, 'resolve', 'resolved_from_filament')),
+                Action::make('hide_profile')
+                    ->label('Hide profile')
+                    ->requiresConfirmation()
+                    ->visible(static fn (Report $record): bool => 'open' === $record->status && 'profile' === $record->target_type)
+                    ->action(static fn (Report $record): mixed => self::dispatchModerationAction($record, 'hide_profile', 'profile_hidden_from_filament')),
             ])
             ->toolbarActions([]);
+    }
+
+    private static function dispatchModerationAction(Report $report, string $action, string $resolution): mixed
+    {
+        $user = auth()->user();
+
+        if (!$user instanceof User) {
+            return null;
+        }
+
+        return app(CommandBusInterface::class)->dispatchPayload(AdminModerateReportCommand::class, [
+            'actor_user_id' => $user->getKey(),
+            'report_id' => $report->getKey(),
+            'action' => $action,
+            'resolution' => $resolution,
+        ], new SystemContext((string) $user->getKey(), request()->ip()));
     }
 }
