@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Discovery;
 
+use App\Livewire\Discovery\DiscoveryCard;
 use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\DatingProfile;
@@ -11,6 +12,7 @@ use App\Models\DiscoveryDecision;
 use App\Models\ProfilePreference;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 final class DiscoveryDecisionTest extends TestCase
@@ -38,7 +40,8 @@ final class DiscoveryDecisionTest extends TestCase
             ->get('/discovery')
             ->assertOk()
             ->assertSee($second->display_name)
-            ->assertDontSee($first->display_name);
+            ->assertDontSee($first->display_name)
+            ->assertSeeLivewire(DiscoveryCard::class);
     }
 
     public function test_accept_records_one_sided_connection(): void
@@ -83,6 +86,31 @@ final class DiscoveryDecisionTest extends TestCase
         $this->assertSame('accepted', $connection->profile_two_decision);
         $this->assertNotNull($connection->matched_at);
         $this->assertSame(1, Conversation::query()->whereBelongsTo($connection)->count());
+    }
+
+    public function test_livewire_reject_records_decision_and_loads_next_candidate(): void
+    {
+        $viewer = $this->createProfile('livewire.reject.viewer@example.com');
+        $first = $this->createProfile('livewire.reject.first@example.com', ['display_name' => 'Livewire First']);
+        $second = $this->createProfile('livewire.reject.second@example.com', ['display_name' => 'Livewire Second']);
+        $this->createPreference($viewer);
+
+        Livewire::actingAs($viewer->user)
+            ->test(DiscoveryCard::class, ['candidate' => $first])
+            ->call('reject')
+            ->assertSee('Livewire Second')
+            ->assertDontSee('Livewire First');
+
+        $this->assertDatabaseHas('discovery_decisions', [
+            'viewer_profile_id' => $viewer->getKey(),
+            'target_profile_id' => $first->getKey(),
+            'decision' => 'rejected',
+        ]);
+
+        $this->assertDatabaseMissing('discovery_decisions', [
+            'viewer_profile_id' => $viewer->getKey(),
+            'target_profile_id' => $second->getKey(),
+        ]);
     }
 
     /**
