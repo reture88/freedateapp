@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Connection;
 
+use App\Livewire\Connection\MatchList;
 use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\DatingProfile;
@@ -65,6 +66,7 @@ final class MatchListTest extends TestCase
             ->assertOk()
             ->assertSee('Visible Match')
             ->assertSee('Open chat')
+            ->assertSeeLivewire(MatchList::class)
             ->assertDontSee('Pending Match')
             ->assertDontSee('Unmatched Person')
             ->assertDontSee('Blocked Person')
