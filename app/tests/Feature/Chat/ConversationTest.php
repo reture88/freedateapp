@@ -173,6 +173,24 @@ final class ConversationTest extends TestCase
             ]);
     }
 
+    public function test_private_conversation_broadcast_channel_is_limited_to_matched_participants(): void
+    {
+        [$first, , $conversation] = $this->createMatchedConversation();
+        $outsider = $this->createProfile('broadcast.outsider@example.com');
+        $payload = [
+            'socket_id' => '1234.5678',
+            'channel_name' => sprintf('private-conversations.%d', $conversation->getKey()),
+        ];
+
+        $this->actingAs($first->user)
+            ->post('/broadcasting/auth', $payload)
+            ->assertOk();
+
+        $this->actingAs($outsider->user)
+            ->post('/broadcasting/auth', $payload)
+            ->assertForbidden();
+    }
+
     public function test_matched_user_can_view_other_profile_from_chat(): void
     {
         [$first, $second] = $this->createMatchedConversation();
