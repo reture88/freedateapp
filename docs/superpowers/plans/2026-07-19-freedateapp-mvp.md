@@ -770,11 +770,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Install Livewire, Filament, and Laravel Reverb through Composer.
-- [ ] Add Livewire scripts/styles to the authenticated layout.
-- [ ] Add Reverb environment defaults to `.env.example`.
-- [ ] Run tests and style checks.
-- [ ] Commit: `feat: add livewire filament reverb foundation`.
+- [x] Install Livewire, Filament, and Laravel Reverb through Composer.
+- [x] Add Livewire scripts/styles to the authenticated layout.
+- [x] Add Reverb environment defaults to `.env.example`.
+- [x] Run tests and style checks.
+- [x] Commit: `feat: add livewire filament reverb foundation`.
 
 ### Story 10.2: Convert User Workflows to Livewire
 
@@ -789,11 +789,12 @@ Acceptance:
 
 Steps:
 
-- [ ] Convert profile edit and preferences screens.
-- [ ] Convert discovery card and decision actions.
-- [ ] Convert match list and conversation screen.
-- [ ] Add Livewire feature tests for key interactions.
-- [ ] Commit per coherent workflow.
+- [ ] Convert profile edit screens.
+- [x] Convert preferences screens.
+- [x] Convert discovery card and decision actions.
+- [x] Convert match list and conversation screen.
+- [x] Add Livewire feature tests for key interactions.
+- [x] Commit per coherent workflow.
 
 ### Story 10.3: Build Filament Admin and Moderation
 
@@ -806,10 +807,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Configure a Filament admin panel.
-- [ ] Add resources for users, profiles, reports, audit logs, and metrics.
+- [x] Configure a Filament admin panel.
+- [x] Add read-only resources for users, profiles, reports, audit logs, and
+  metrics.
 - [ ] Add guarded moderation actions.
-- [ ] Add feature tests or policy tests for authorization.
+- [x] Add feature tests or policy tests for authorization.
 - [ ] Commit: `feat: add filament moderation panel`.
 
 ### Story 10.4: Reverb Realtime UX

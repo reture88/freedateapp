@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     protected $fillable = [
         'name',
@@ -36,6 +38,11 @@ class User extends Authenticatable
         $role = $this->getAttribute('role');
 
         return true === $this->getAttribute('is_admin') || 'admin' === $role;
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return 'admin' === $panel->getId() && $this->canAccessAdminPanel();
     }
 
     /**

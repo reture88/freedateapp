@@ -57,8 +57,9 @@ Current implementation status:
   and the conversation panel.
 - Chat messages are loaded oldest-to-newest by `created_at` and `id`, so the
   newest message appears at the bottom.
-- Filament has a registered admin panel foundation at `/admin`; domain-specific
-  resources are still planned.
+- Filament has a registered admin panel at `/admin-panel` with read-only list
+  and detail resources for users, dating profiles, reports, audit logs, and
+  metric events.
 - Reverb is configured and running, but domain broadcast events and Livewire
   listeners are still planned.
 
