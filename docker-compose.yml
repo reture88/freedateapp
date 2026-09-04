@@ -18,10 +18,17 @@ services:
       - redis
     working_dir: /var/www/html
     environment:
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-null}
       DB_HOST: ${DB_HOST}
       DB_DATABASE: ${DB_DATABASE}
       DB_USERNAME: ${DB_USERNAME}
       DB_PASSWORD: ${DB_PASSWORD}
+      REVERB_APP_ID: ${REVERB_APP_ID:-freedateapp-local}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-freedateapp-local-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-freedateapp-local-secret}
+      REVERB_HOST: ${REVERB_HOST:-reverb}
+      REVERB_PORT: ${REVERB_PORT:-8080}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
       REDIS_HOST: ${REDIS_HOST:-redis}
       REDIS_PORT: ${REDIS_PORT:-6379}
       REDIS_CLIENT: ${REDIS_CLIENT:-predis}
@@ -32,6 +39,38 @@ services:
       - ./app:/var/www/html
       - ./.env:/var/www/.env
     command: sh -lc "rm -f .env && ln -s ../.env .env && composer install --no-interaction --prefer-dist && chmod -R a+rwX storage bootstrap/cache && php-fpm"
+
+  reverb:
+    image: freedateapp-php
+    depends_on:
+      - php
+      - redis
+    working_dir: /var/www/html
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      BROADCAST_CONNECTION: ${BROADCAST_CONNECTION:-pusher}
+      DB_HOST: ${DB_HOST}
+      DB_DATABASE: ${DB_DATABASE}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_CLIENT: ${REDIS_CLIENT:-predis}
+      REVERB_APP_ID: ${REVERB_APP_ID:-freedateapp-local}
+      REVERB_APP_KEY: ${REVERB_APP_KEY:-freedateapp-local-key}
+      REVERB_APP_SECRET: ${REVERB_APP_SECRET:-freedateapp-local-secret}
+      REVERB_HOST: ${REVERB_HOST:-reverb}
+      REVERB_PORT: ${REVERB_PORT:-8080}
+      REVERB_SCHEME: ${REVERB_SCHEME:-http}
+      REVERB_SERVER_HOST: ${REVERB_SERVER_HOST:-0.0.0.0}
+      REVERB_SERVER_PORT: ${REVERB_SERVER_PORT:-8080}
+    ports:
+      - "${REVERB_PUBLIC_PORT:-8081}:${REVERB_SERVER_PORT:-8080}"
+    volumes:
+      - ./app:/var/www/html
+      - ./.env:/var/www/.env
+    command: sh -lc "rm -f .env && ln -s ../.env .env && php artisan reverb:start --host=$${REVERB_SERVER_HOST:-0.0.0.0} --port=$${REVERB_SERVER_PORT:-8080}"
 
   redis:
     image: redis:7-alpine
