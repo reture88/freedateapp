@@ -14,7 +14,7 @@
                 <a href="{{ route('matches.index') }}">Matchek</a>
                 <a href="{{ route('dating-preferences.edit') }}">Preferenciak</a>
                 @if (auth()->user()?->canAccessAdminPanel())
-                    <a href="{{ route('admin.users.index') }}">Admin</a>
+                    <a href="{{ url('/admin-panel') }}">Admin</a>
                 @endif
                 <form method="POST" action="{{ route('auth.logout') }}">
                     @csrf

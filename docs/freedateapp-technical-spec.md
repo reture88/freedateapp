@@ -61,7 +61,8 @@ Current implementation status:
 - Filament has a registered admin panel at `/admin-panel` with read-only list
   and detail resources for users, dating profiles, reports, audit logs, and
   metric events. Report resolve/profile-hide and user suspend/restore actions
-  are guarded and dispatch CQRS commands.
+  are guarded and dispatch CQRS commands. Authenticated app navigation points
+  admins to this Filament panel.
 - Reverb is configured and running. Chat message sending broadcasts a private
   conversation event, and the Livewire conversation panel appends incoming
   message events. New matches broadcast to private user channels and the
