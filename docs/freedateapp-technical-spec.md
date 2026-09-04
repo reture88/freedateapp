@@ -53,7 +53,8 @@ Current implementation status:
   Reverb.
 - Docker Compose runs a dedicated `reverb` service exposed locally on port
   `8081`.
-- Livewire powers preferences, discovery accept/reject, match list rendering,
+- Livewire powers dating profile onboarding/editing, profile photo upload and
+  primary selection, preferences, discovery accept/reject, match list rendering,
   and the conversation panel.
 - Chat messages are loaded oldest-to-newest by `created_at` and `id`, so the
   newest message appears at the bottom.

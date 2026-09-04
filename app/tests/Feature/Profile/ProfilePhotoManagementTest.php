@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Profile;
 
+use App\Livewire\Profile\DatingProfileForm;
 use App\Models\DatingProfile;
 use App\Models\ProfilePhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 final class ProfilePhotoManagementTest extends TestCase
@@ -84,6 +86,38 @@ final class ProfilePhotoManagementTest extends TestCase
 
         $this->assertFalse($oldPrimary->fresh()->is_primary);
         $this->assertTrue($newPrimary->fresh()->is_primary);
+    }
+
+    public function test_livewire_profile_form_can_upload_and_choose_primary_photo(): void
+    {
+        Storage::fake('public');
+        [$user, $profile] = $this->createUserWithProfile();
+
+        Livewire::actingAs($user)
+            ->test(DatingProfileForm::class)
+            ->set('photo', UploadedFile::fake()->create('first.jpg', 512, 'image/jpeg'))
+            ->call('uploadPhoto')
+            ->assertHasNoErrors()
+            ->assertSee('Profile photo uploaded.');
+
+        $firstPhoto = ProfilePhoto::query()->whereBelongsTo($profile)->firstOrFail();
+        $this->assertTrue($firstPhoto->is_primary);
+
+        $secondPhoto = ProfilePhoto::query()->create([
+            'dating_profile_id' => $profile->getKey(),
+            'path' => 'profile-photos/second.jpg',
+            'sort_order' => 2,
+            'is_primary' => false,
+            'moderation_status' => 'approved',
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(DatingProfileForm::class)
+            ->call('choosePrimary', $secondPhoto->getKey())
+            ->assertSee('Primary profile photo updated.');
+
+        $this->assertFalse($firstPhoto->fresh()->is_primary);
+        $this->assertTrue($secondPhoto->fresh()->is_primary);
     }
 
     /**

@@ -789,7 +789,7 @@ Acceptance:
 
 Steps:
 
-- [ ] Convert profile edit screens.
+- [x] Convert profile edit screens.
 - [x] Convert preferences screens.
 - [x] Convert discovery card and decision actions.
 - [x] Convert match list and conversation screen.
