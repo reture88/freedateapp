@@ -110,12 +110,12 @@ Acceptance:
 
 Steps:
 
-- [ ] Write model relationship test for `User::datingProfile()`.
-- [ ] Add migration with user foreign key, display name, birthdate, gender, orientation, city, country code, approximate lat/lng, relationship intent, bio, visibility status, moderation status, AI wingman flag, completed timestamp.
-- [ ] Add `DatingProfile` model with fillable fields and casts.
-- [ ] Add `datingProfile()` relation to `User`.
-- [ ] Run `docker compose exec php vendor/bin/phpunit --filter DatingProfileModelTest`.
-- [ ] Commit: `feat: add dating profile persistence`.
+- [x] Write model relationship test for `User::datingProfile()`.
+- [x] Add migration with user foreign key, display name, birthdate, gender, orientation, city, country code, approximate lat/lng, relationship intent, bio, visibility status, moderation status, AI wingman flag, completed timestamp.
+- [x] Add `DatingProfile` model with fillable fields and casts.
+- [x] Add `datingProfile()` relation to `User`.
+- [x] Run `docker compose exec php vendor/bin/phpunit --filter DatingProfileModelTest`.
+- [x] Commit: `feat: add dating profile persistence`.
 
 ### Story 1.2: Preferences, Photos, Decisions, Connections, Chat Tables
 
@@ -135,12 +135,12 @@ Acceptance:
 
 Steps:
 
-- [ ] Write tests for model relationships and unique constraints.
-- [ ] Create migrations with explicit foreign keys and indexes.
-- [ ] Add Eloquent models and relationships.
-- [ ] Add deterministic connection helper method or domain value object.
-- [ ] Run targeted unit tests.
-- [ ] Commit: `feat: add dating interaction tables`.
+- [x] Write tests for model relationships and unique constraints.
+- [x] Create migrations with explicit foreign keys and indexes.
+- [x] Add Eloquent models and relationships.
+- [x] Add deterministic connection helper method or domain value object.
+- [x] Run targeted unit tests.
+- [x] Commit: `feat: add dating interaction tables`.
 
 ### Story 1.3: Safety and Metrics Tables
 
@@ -159,19 +159,19 @@ Acceptance:
 
 Steps:
 
-- [ ] Write model relationship tests.
-- [ ] Create migrations and indexes.
-- [ ] Add models and casts.
-- [ ] Run targeted unit tests.
-- [ ] Commit: `feat: add safety and metrics persistence`.
+- [x] Write model relationship tests.
+- [x] Create migrations and indexes.
+- [x] Add models and casts.
+- [x] Run targeted unit tests.
+- [x] Commit: `feat: add safety and metrics persistence`.
 
 ### Epic 1 Review Gate
 
-- [ ] `docker compose exec php composer test`
-- [ ] `docker compose exec php composer phpstan`
-- [ ] `docker compose exec php composer cs-check`
-- [ ] Confirm no route behavior changed yet.
-- [ ] Review migrations for reversible down methods and matching foreign key types.
+- [x] `docker compose exec php composer test`
+- [x] `docker compose exec php composer phpstan`
+- [x] `docker compose exec php composer cs-check`
+- [x] Confirm no route behavior changed yet.
+- [x] Review migrations for reversible down methods and matching foreign key types.
 
 ## Epic 2: Profile Onboarding
 
@@ -196,13 +196,13 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature test for completing onboarding from basics to preview.
-- [ ] Add Profile module routes guarded by auth middleware.
-- [ ] Add command/request handlers and domain services for saving profile sections.
-- [ ] Add Blade views using existing layout patterns.
-- [ ] Add redirect logic after login/registration for incomplete profiles.
-- [ ] Run `docker compose exec php vendor/bin/phpunit --filter ProfileOnboardingTest`.
-- [ ] Commit: `feat: add profile onboarding`.
+- [x] Write feature test for completing onboarding from basics to preview.
+- [x] Add Profile module routes guarded by auth middleware.
+- [x] Add command/request handlers and domain services for saving profile sections.
+- [x] Add Blade/Livewire views using existing layout patterns.
+- [x] Add redirect logic after login/registration for incomplete profiles.
+- [x] Run `docker compose exec php vendor/bin/phpunit --filter ProfileOnboardingTest`.
+- [x] Commit: `feat: add profile onboarding`.
 
 ### Story 2.2: Profile Edit and Visibility
 
@@ -219,18 +219,18 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for edit and hide/show.
-- [ ] Add `UpdateProfileVisibilityService`.
-- [ ] Add edit/preview views.
-- [ ] Add UI links from authenticated layout.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add profile editing and visibility controls`.
+- [x] Write feature tests for edit and hide/show.
+- [x] Add `UpdateProfileVisibilityService`.
+- [x] Add edit/preview views.
+- [x] Add UI links from authenticated layout.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add profile editing and visibility controls`.
 
 ### Epic 2 Review Gate
 
-- [ ] Run full tests, PHPStan, and style check.
+- [x] Run full tests, PHPStan, and style check.
 - [ ] Browser smoke: register, complete onboarding, preview profile, hide/show profile.
-- [ ] Confirm incomplete profile cannot reach discovery.
+- [x] Confirm incomplete profile cannot reach discovery.
 
 ## Epic 3: Preferences
 
@@ -252,12 +252,12 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for valid and invalid preference saves.
-- [ ] Add Preference module routes and controller.
-- [ ] Add command, handler, service, and response classes.
-- [ ] Add edit form with clear labels and helper text.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add dating preferences`.
+- [x] Write feature tests for valid and invalid preference saves.
+- [x] Add Preference module routes and controller.
+- [x] Add command, handler, service, and response classes.
+- [x] Add edit form with clear labels and helper text.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add dating preferences`.
 
 ### Story 3.2: Preference Summary for Design and Discovery
 
@@ -274,15 +274,15 @@ Acceptance:
 
 Steps:
 
-- [ ] Write unit test for normalized hard filter output.
-- [ ] Add query and response classes.
-- [ ] Add summary component partial.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: expose preference summary`.
+- [x] Write unit test for normalized hard filter output.
+- [x] Add query and response classes.
+- [x] Add summary component partial.
+- [x] Run targeted tests.
+- [x] Commit: `feat: expose preference summary`.
 
 ### Epic 3 Review Gate
 
-- [ ] Full tests, PHPStan, style check.
+- [x] Full tests, PHPStan, style check.
 - [ ] Browser smoke: update preferences and confirm validation messages.
 - [ ] Design check: labels match `docs/freedateapp-figma-design-brief.md`.
 
@@ -305,11 +305,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write unit tests with seeded profiles for each exclusion rule.
-- [ ] Add `FindNextCandidateQuery`, handler, response, and domain service.
-- [ ] Add distance calculation utility using approximate coordinates.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add discovery candidate query`.
+- [x] Write unit tests with seeded profiles for each exclusion rule.
+- [x] Add `FindNextCandidateQuery`, handler, response, and domain service.
+- [x] Add distance calculation utility using approximate coordinates.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add discovery candidate query`.
 
 ### Story 4.2: Discovery Card UI
 
@@ -327,11 +327,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for candidate and empty state.
-- [ ] Add controller and route.
-- [ ] Add Blade view and profile card partial.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add discovery card screen`.
+- [x] Write feature tests for candidate and empty state.
+- [x] Add controller and route.
+- [x] Add Blade/Livewire view and profile card partial.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add discovery card screen`.
 
 ### Story 4.3: Accept and Reject Decisions
 
@@ -349,17 +349,17 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for reject, one-sided accept, and mutual accept.
-- [ ] Add decision command classes and services.
-- [ ] Add forms/buttons for accept/reject.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add discovery decisions and matching`.
+- [x] Write feature tests for reject, one-sided accept, and mutual accept.
+- [x] Add decision command classes and services.
+- [x] Add forms/buttons for accept/reject.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add discovery decisions and matching`.
 
 ### Epic 4 Review Gate
 
-- [ ] Full tests, PHPStan, style check.
+- [x] Full tests, PHPStan, style check.
 - [ ] Browser smoke: create two users, complete profiles, accept from both sides, confirm match.
-- [ ] Confirm rejected profiles do not reappear.
+- [x] Confirm rejected profiles do not reappear.
 
 ## Epic 5: Connections and Chat
 
@@ -380,11 +380,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for match list filtering.
-- [ ] Add query and controller.
-- [ ] Add match list view.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add match list`.
+- [x] Write feature tests for match list filtering.
+- [x] Add query and controller.
+- [x] Add match list view.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add match list`.
 
 ### Story 5.2: Conversation View and Send Message
 
@@ -403,11 +403,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for access control and sending.
-- [ ] Add chat routes, controller, command, handler, and service.
-- [ ] Add conversation view and message partials.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add matched chat`.
+- [x] Write feature tests for access control and sending.
+- [x] Add chat routes, controller, command, handler, and service.
+- [x] Add conversation view and message partials.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add matched chat`.
 
 ### Story 5.3: Unmatch
 
@@ -425,15 +425,15 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for unmatch flow.
-- [ ] Add service and route.
-- [ ] Add confirmation modal.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add unmatch flow`.
+- [x] Write feature tests for unmatch flow.
+- [x] Add service and route.
+- [x] Add confirmation modal.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add unmatch flow`.
 
 ### Epic 5 Review Gate
 
-- [ ] Full tests, PHPStan, style check.
+- [x] Full tests, PHPStan, style check.
 - [ ] Browser smoke: match two users, send messages, unmatch, confirm chat access denied.
 
 ## Epic 6: AI Szárnysegéd
@@ -456,11 +456,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for toggles and discovery exclusion.
-- [ ] Add profile setting command/service.
-- [ ] Wire preference exclusion into candidate query.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add ai wingman settings`.
+- [x] Write feature tests for toggles and discovery exclusion.
+- [x] Add profile setting command/service.
+- [x] Wire preference exclusion into candidate query.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add ai wingman settings`.
 
 ### Story 6.2: Assistant Starter Generator
 
@@ -479,11 +479,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write unit tests for normal, missing-fact, and unsafe contexts.
-- [ ] Add context DTO and template selection service.
-- [ ] Add safety guard rules.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add ai wingman starter generation`.
+- [x] Write unit tests for normal, missing-fact, and unsafe contexts.
+- [x] Add context DTO and template selection service.
+- [x] Add safety guard rules.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add ai wingman starter generation`.
 
 ### Story 6.3: Scheduled Assistant Posting
 
@@ -502,18 +502,18 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests using time travel.
-- [ ] Add command/job and domain service.
-- [ ] Register schedule.
-- [ ] Add assistant message bubble partial.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add ai wingman scheduled starter`.
+- [x] Write feature tests using time travel.
+- [x] Add command/job and domain service.
+- [x] Register schedule.
+- [x] Add assistant message bubble partial.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add ai wingman scheduled starter`.
 
 ### Epic 6 Review Gate
 
-- [ ] Full tests, PHPStan, style check.
+- [x] Full tests, PHPStan, style check.
 - [ ] Manual smoke: create match, wait/trigger command, confirm assistant message appears once.
-- [ ] Review assistant copy against design brief and safety rules.
+- [x] Review assistant copy against design brief and safety rules.
 
 ## Epic 7: Safety and Account Controls
 
@@ -535,11 +535,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for each report target type.
-- [ ] Add report command/service.
-- [ ] Add report routes and modal partials.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add report flow`.
+- [x] Write feature tests for each report target type.
+- [x] Add report command/service.
+- [x] Add report routes and modal partials.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add report flow`.
 
 ### Story 7.2: Blocks
 
@@ -557,11 +557,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for block effects.
-- [ ] Add block service and route.
-- [ ] Update candidate query and chat authorization.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add user blocking`.
+- [x] Write feature tests for block effects.
+- [x] Add block service and route.
+- [x] Update candidate query and chat authorization.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add user blocking`.
 
 ### Story 7.3: Account Deactivation and Deletion
 
@@ -579,17 +579,17 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for account lifecycle.
-- [ ] Add settings routes and controllers.
-- [ ] Add services updating account/profile status.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add account lifecycle controls`.
+- [x] Write feature tests for account lifecycle.
+- [x] Add settings routes and controllers.
+- [x] Add services updating account/profile status.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add account lifecycle controls`.
 
 ### Epic 7 Review Gate
 
-- [ ] Full tests, PHPStan, style check.
+- [x] Full tests, PHPStan, style check.
 - [ ] Browser smoke report/block/deactivate flows.
-- [ ] Security review: blocked users cannot access direct URLs.
+- [x] Security review: blocked users cannot access direct URLs.
 
 ## Epic 8: Admin Moderation and Metrics
 
@@ -611,11 +611,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for admin and non-admin access.
-- [ ] Add report queue query/controller/views.
-- [ ] Add admin navigation link.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add admin report queue`.
+- [x] Write feature tests for admin and non-admin access.
+- [x] Add report queue query/controller/views.
+- [x] Add admin navigation link.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add admin report queue`.
 
 ### Story 8.2: Moderation Actions and Audit Log
 
@@ -633,11 +633,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature tests for moderation actions and audit log.
-- [ ] Add services and routes.
-- [ ] Add confirmation forms.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add moderation actions and audit logs`.
+- [x] Write feature tests for moderation actions and audit log.
+- [x] Add services and routes.
+- [x] Add confirmation forms.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add moderation actions and audit logs`.
 
 ### Story 8.3: Metrics Dashboard
 
@@ -654,17 +654,17 @@ Acceptance:
 
 Steps:
 
-- [ ] Write feature test with seeded metric events.
-- [ ] Add metric recording service used by key domain services.
-- [ ] Add dashboard query/controller/view.
-- [ ] Run targeted tests.
-- [ ] Commit: `feat: add admin metrics dashboard`.
+- [x] Write feature test with seeded metric events.
+- [x] Add metric recording service used by key domain services.
+- [x] Add dashboard query/controller/view.
+- [x] Run targeted tests.
+- [x] Commit: `feat: add admin metrics dashboard`.
 
 ### Epic 8 Review Gate
 
-- [ ] Full tests, PHPStan, style check.
+- [x] Full tests, PHPStan, style check.
 - [ ] Browser smoke admin report queue, moderation action, audit log, metrics.
-- [ ] Verify non-admin access denied for all admin routes.
+- [x] Verify non-admin access denied for all admin routes.
 
 ## Epic 9: Design-Readiness and Launch Polish
 
