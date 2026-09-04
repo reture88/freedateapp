@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Assistant\DomainService;
 
 use App\Assistant\Dto\AssistantStarterContext;
+use App\Events\MessageSent;
 use App\Models\Connection;
 use App\Models\DatingProfile;
 use App\Models\Message;
@@ -54,12 +55,14 @@ final class PostAssistantStartersService
                 continue;
             }
 
-            Message::query()->create([
+            /** @var Message $message */
+            $message = Message::query()->create([
                 'conversation_id' => $conversation->getKey(),
                 'sender_user_id' => null,
                 'sender_type' => 'assistant',
                 'body' => $body,
             ]);
+            MessageSent::dispatch($message);
             ++$posted;
         }
 

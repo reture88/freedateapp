@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Assistant;
 
+use App\Events\MessageSent;
 use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\DatingProfile;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 final class AiWingmanPostingTest extends TestCase
@@ -24,6 +26,7 @@ final class AiWingmanPostingTest extends TestCase
             'second' => ['display_name' => 'Mari', 'bio' => 'Harom macska es hetvegi turak.'],
             'matched_at' => '2026-07-19 05:00:00',
         ]);
+        Event::fake([MessageSent::class]);
 
         $this->artisan('assistant:post-wingman-starters')->assertSuccessful();
 
@@ -32,6 +35,7 @@ final class AiWingmanPostingTest extends TestCase
         $this->assertSame('assistant', $message->sender_type);
         $this->assertStringContainsString('Sanyi', $message->body);
         $this->assertStringContainsString('Mari', $message->body);
+        Event::assertDispatched(MessageSent::class, static fn (MessageSent $event): bool => (int) $event->message->getKey() === (int) $message->getKey());
 
         $this->artisan('assistant:post-wingman-starters')->assertSuccessful();
         $this->assertSame(1, Message::query()->whereBelongsTo($conversation)->count());

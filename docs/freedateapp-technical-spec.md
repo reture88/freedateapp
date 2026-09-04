@@ -64,8 +64,9 @@ Current implementation status:
 - Reverb is configured and running. Chat message sending broadcasts a private
   conversation event, and the Livewire conversation panel appends incoming
   message events. New matches broadcast to private user channels and the
-  Livewire match list prepends incoming match events. Realtime read-state,
-  assistant starter, and moderation report events are still planned.
+  Livewire match list prepends incoming match events. AI wingman starter
+  messages reuse the chat message event, and new safety reports broadcast to an
+  admin-only reports channel. Realtime read-state events are still planned.
 
 ## MVP Module Map
 

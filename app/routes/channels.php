@@ -35,3 +35,5 @@ Broadcast::channel('conversations.{conversation}', static function (User $user, 
 });
 
 Broadcast::channel('users.{user}', static fn (User $authenticatedUser, int $user): bool => (int) $authenticatedUser->getKey() === $user);
+
+Broadcast::channel('admin.reports', static fn (User $user): bool => $user->canAccessAdminPanel());

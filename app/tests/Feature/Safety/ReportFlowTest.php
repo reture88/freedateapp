@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Safety;
 
+use App\Events\ReportSubmitted;
 use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\DatingProfile;
 use App\Models\Message;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 final class ReportFlowTest extends TestCase
@@ -31,6 +33,7 @@ final class ReportFlowTest extends TestCase
             'sender_type' => 'assistant',
             'body' => 'Assistant text.',
         ]);
+        Event::fake([ReportSubmitted::class]);
 
         $this->actingAs($reporter->user)
             ->post('/reports', [
@@ -79,6 +82,7 @@ final class ReportFlowTest extends TestCase
             'category' => 'unsafe_ai',
             'status' => 'open',
         ]);
+        Event::assertDispatchedTimes(ReportSubmitted::class, 3);
     }
 
     public function test_invalid_report_payload_is_rejected(): void
@@ -95,6 +99,38 @@ final class ReportFlowTest extends TestCase
             ])
             ->assertRedirect('/discovery')
             ->assertSessionHasErrors(['target_type', 'target_id', 'category', 'note']);
+    }
+
+    public function test_admin_report_broadcast_channel_is_limited_to_admins(): void
+    {
+        $admin = User::query()->create([
+            'name' => 'Admin User',
+            'email' => 'report.admin@example.com',
+            'password' => 'secret123',
+            'role' => 'admin',
+            'is_admin' => true,
+            'is_active' => true,
+        ]);
+        $customer = User::query()->create([
+            'name' => 'Customer User',
+            'email' => 'report.customer@example.com',
+            'password' => 'secret123',
+            'role' => 'customer',
+            'is_admin' => false,
+            'is_active' => true,
+        ]);
+        $payload = [
+            'socket_id' => '1234.5678',
+            'channel_name' => 'private-admin.reports',
+        ];
+
+        $this->actingAs($admin)
+            ->post('/broadcasting/auth', $payload)
+            ->assertOk();
+
+        $this->actingAs($customer)
+            ->post('/broadcasting/auth', $payload)
+            ->assertForbidden();
     }
 
     /**
