@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Chat;
 
+use App\Chat\Dto\ConversationView;
+use App\Livewire\Chat\ConversationPanel;
 use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\DatingProfile;
@@ -13,6 +15,7 @@ use App\Models\ProfileTag;
 use App\Models\User;
 use Database\Seeders\ProfileTagTaxonomySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 final class ConversationTest extends TestCase
@@ -27,7 +30,8 @@ final class ConversationTest extends TestCase
             ->get(sprintf('/conversations/%d', $conversation->getKey()))
             ->assertOk()
             ->assertSee($second->display_name)
-            ->assertSee('No messages yet.');
+            ->assertSee('No messages yet.')
+            ->assertSeeLivewire(ConversationPanel::class);
 
         $this->actingAs($first->user)
             ->post(sprintf('/conversations/%d/messages', $conversation->getKey()), [
@@ -108,9 +112,31 @@ final class ConversationTest extends TestCase
         $this->actingAs($first->user)
             ->get(sprintf('/conversations/%d', $conversation->getKey()))
             ->assertOk()
-            ->assertSeeInOrder(['First inserted message', 'Second inserted message'])
+            ->assertSeeInOrder(['Second inserted message', 'First inserted message'])
             ->assertSee('https://i.pravatar.cc/600?img=7')
             ->assertSee(sprintf('/profiles/%d', $second->getKey()));
+    }
+
+    public function test_livewire_conversation_panel_sends_message_through_command_bus(): void
+    {
+        [$first, $second, $conversation] = $this->createMatchedConversation();
+
+        Livewire::actingAs($first->user)
+            ->test(ConversationPanel::class, [
+                'conversationView' => new ConversationView($conversation->load('messages'), $second),
+            ])
+            ->set('body', 'Livewire uzenet')
+            ->call('send')
+            ->assertHasNoErrors()
+            ->assertSet('body', '')
+            ->assertSee('Livewire uzenet');
+
+        $this->assertDatabaseHas('messages', [
+            'conversation_id' => $conversation->getKey(),
+            'sender_user_id' => $first->user_id,
+            'sender_type' => 'user',
+            'body' => 'Livewire uzenet',
+        ]);
     }
 
     public function test_matched_user_can_view_other_profile_from_chat(): void

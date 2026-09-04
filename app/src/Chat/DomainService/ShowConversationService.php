@@ -15,7 +15,13 @@ final class ShowConversationService
     public function handle(ShowConversationQuery $query): ConversationView
     {
         $viewerProfile = User::query()->findOrFail($query->userId)->datingProfile()->firstOrFail();
-        $conversation = Conversation::query()->with(['connection.profileOne', 'connection.profileTwo', 'messages'])->findOrFail($query->conversationId);
+        $conversation = Conversation::query()
+            ->with([
+                'connection.profileOne.photos',
+                'connection.profileTwo.photos',
+                'messages' => static fn ($query) => $query->orderBy('created_at')->orderBy('id'),
+            ])
+            ->findOrFail($query->conversationId);
         $connection = $conversation->connection;
 
         if ('matched' !== $connection->status) {
