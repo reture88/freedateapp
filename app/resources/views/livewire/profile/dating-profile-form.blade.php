@@ -51,16 +51,19 @@
         <label>
             Country code
             <input wire:model="countryCode" required maxlength="2">
+            <span class="field-help">Use a two-letter ISO country code, for example HU or GB.</span>
         </label>
 
         <label>
             Approximate latitude
             <input wire:model="approximateLatitude">
+            <span class="field-help">Optional. Used only for distance-based discovery.</span>
         </label>
 
         <label>
             Approximate longitude
             <input wire:model="approximateLongitude">
+            <span class="field-help">Optional. Pair it with latitude to improve nearby matches.</span>
         </label>
 
         <label>
@@ -75,16 +78,20 @@
         <label>
             Bio
             <textarea wire:model="bio" maxlength="1000"></textarea>
+            <span class="field-help">Keep it practical: what you like, what you are looking for, and an easy conversation hook.</span>
         </label>
 
         <label class="checkbox-row">
             <input type="checkbox" wire:model="aiWingmanEnabled">
-            Enable AI Szarnyseged playful starter messages
+            <span>
+                Enable AI Szarnyseged playful starter messages
+                <small>When both matched people stay silent, the assistant can post one light opener in the chat.</small>
+            </span>
         </label>
 
         <label class="checkbox-row">
             <input type="checkbox" wire:model="privacyConsent" required>
-            I understand my visible profile details can be used for matching and discovery.
+            <span>I understand my visible profile details can be used for matching and discovery.</span>
         </label>
 
         @if ($tagCategories !== [])
@@ -115,7 +122,7 @@
             </section>
         @endif
 
-        <button type="submit" wire:loading.attr="disabled" wire:target="save">
+        <button class="button button--primary" type="submit" wire:loading.attr="disabled" wire:target="save">
             <span wire:loading.remove wire:target="save">Save dating profile</span>
             <span wire:loading wire:target="save">Saving...</span>
         </button>

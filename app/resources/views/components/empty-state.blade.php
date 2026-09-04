@@ -2,7 +2,7 @@
     $headingLevel = (int) ($headingLevel ?? 2);
 @endphp
 
-<section class="panel empty-state">
+<section class="{{ $class ?? 'panel empty-state' }}">
     @if ($headingLevel === 1)
         <h1>{{ $title }}</h1>
     @elseif ($headingLevel === 3)

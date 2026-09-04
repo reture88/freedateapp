@@ -709,11 +709,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Review all MVP screens against design brief.
-- [ ] Fix missing labels and ambiguous buttons.
-- [ ] Add helper text for sensitive and AI settings.
-- [ ] Run full tests.
-- [ ] Commit: `polish: improve dating app ux copy`.
+- [x] Review all MVP screens against design brief.
+- [x] Fix missing labels and ambiguous buttons.
+- [x] Add helper text for sensitive and AI settings.
+- [x] Run full tests.
+- [x] Commit: `polish: improve dating app ux copy`.
 
 ### Story 9.3: Final Definition of Done
 

@@ -51,7 +51,7 @@
             <form method="POST" action="{{ route('admin.users.moderation', $user) }}">
                 @csrf
                 <input type="hidden" name="action" value="restore">
-                <button type="submit">Restore</button>
+                <button class="button button--secondary button--inline" type="submit">Restore</button>
             </form>
         </section>
     </div>

@@ -75,8 +75,9 @@
         <label>
             Message
             <textarea wire:model="body" maxlength="2000" required></textarea>
+            <span class="field-help">Messages can be up to 2000 characters.</span>
         </label>
-        <button type="submit" wire:loading.attr="disabled" wire:target="send">
+        <button class="button button--primary" type="submit" wire:loading.attr="disabled" wire:target="send">
             <span wire:loading.remove wire:target="send">Send</span>
             <span wire:loading wire:target="send">Sending...</span>
         </button>

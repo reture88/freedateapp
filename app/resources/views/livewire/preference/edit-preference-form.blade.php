@@ -33,6 +33,7 @@
         <label>
             Distance in km
             <input wire:model="preferredDistanceKm" type="number" min="1" max="500" required>
+            <span class="field-help">Discovery prioritizes closer profiles when location data is available.</span>
         </label>
 
         <fieldset>
@@ -67,7 +68,10 @@
 
         <label class="checkbox-row">
             <input type="checkbox" wire:model="excludeAiWingmanEnabled">
-            Do not show profiles with AI Szarnyseged enabled
+            <span>
+                Do not show profiles with AI Szarnyseged enabled
+                <small>Use this if you only want conversations started by the two matched people.</small>
+            </span>
         </label>
 
         <fieldset>
@@ -90,7 +94,7 @@
             @endforeach
         </fieldset>
 
-        <button type="submit" wire:loading.attr="disabled" wire:target="save">
+        <button class="button button--primary" type="submit" wire:loading.attr="disabled" wire:target="save">
             <span wire:loading.remove wire:target="save">Save preferences</span>
             <span wire:loading wire:target="save">Saving...</span>
         </button>
