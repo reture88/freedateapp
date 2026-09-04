@@ -835,7 +835,7 @@ Steps:
 - [x] Wire Livewire listeners for match updates.
 - [x] Broadcast assistant starter and report events.
 - [x] Add integration tests for channel authorization.
-- [ ] Commit: `feat: add realtime dating events`.
+- [x] Commit: `feat: add realtime dating events`.
 
 ## Execution Recommendation
 

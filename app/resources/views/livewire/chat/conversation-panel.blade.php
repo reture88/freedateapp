@@ -26,6 +26,10 @@
         </div>
     </header>
 
+    <p class="alert alert-error" wire:offline>
+        Reconnecting. Messages will keep working after the connection returns.
+    </p>
+
     @if ($errors->any())
         <div class="alert alert-error">
             <ul>

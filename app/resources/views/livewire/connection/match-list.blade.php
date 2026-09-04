@@ -1,6 +1,10 @@
 <section class="panel">
     <h1>Matches</h1>
 
+    <p class="alert alert-error" wire:offline>
+        Reconnecting. New matches may appear after the connection returns.
+    </p>
+
     @forelse ($matches as $match)
         <article>
             <h2>{{ $match['display_name'] }}</h2>
