@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Chat;
 
 use App\Chat\Dto\ConversationView;
+use App\Events\MessageSent;
 use App\Livewire\Chat\ConversationPanel;
 use App\Models\Connection;
 use App\Models\Conversation;
@@ -15,6 +16,7 @@ use App\Models\ProfileTag;
 use App\Models\User;
 use Database\Seeders\ProfileTagTaxonomySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -120,6 +122,7 @@ final class ConversationTest extends TestCase
     public function test_livewire_conversation_panel_sends_message_through_command_bus(): void
     {
         [$first, $second, $conversation] = $this->createMatchedConversation();
+        Event::fake([MessageSent::class]);
 
         Livewire::actingAs($first->user)
             ->test(ConversationPanel::class, [
@@ -137,6 +140,37 @@ final class ConversationTest extends TestCase
             'sender_type' => 'user',
             'body' => 'Livewire uzenet',
         ]);
+        Event::assertDispatched(MessageSent::class, static fn (MessageSent $event): bool => (int) $event->message->conversation_id === (int) $conversation->getKey());
+    }
+
+    public function test_livewire_conversation_panel_appends_broadcasted_message(): void
+    {
+        [$first, $second, $conversation] = $this->createMatchedConversation();
+
+        Livewire::actingAs($first->user)
+            ->test(ConversationPanel::class, [
+                'conversationView' => new ConversationView($conversation->load('messages'), $second),
+            ])
+            ->call('appendBroadcastedMessage', [
+                'id' => 999,
+                'conversation_id' => $conversation->getKey(),
+                'sender_type' => 'user',
+                'body' => 'Realtime hello',
+            ])
+            ->call('appendBroadcastedMessage', [
+                'id' => 999,
+                'conversation_id' => $conversation->getKey(),
+                'sender_type' => 'user',
+                'body' => 'Realtime hello',
+            ])
+            ->assertSee('Realtime hello')
+            ->assertSet('messages', [
+                [
+                    'id' => 999,
+                    'sender_type' => 'user',
+                    'body' => 'Realtime hello',
+                ],
+            ]);
     }
 
     public function test_matched_user_can_view_other_profile_from_chat(): void

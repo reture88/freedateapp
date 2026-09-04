@@ -15,6 +15,7 @@ use App\Shared\Infrastructure\Bus\Query\QueryBusInterface;
 use App\Shared\Infrastructure\Validation\ValidationException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 final class ConversationPanel extends Component
@@ -87,6 +88,31 @@ final class ConversationPanel extends Component
     public function render(): View
     {
         return view('livewire.chat.conversation-panel');
+    }
+
+    /**
+     * @param array{id?: int, conversation_id?: int, sender_type?: string, body?: string} $event
+     */
+    #[On('echo-private:conversations.{conversationId},MessageSent')]
+    public function appendBroadcastedMessage(array $event): void
+    {
+        $messageId = (int) ($event['id'] ?? 0);
+
+        if ($messageId < 1 || (int) ($event['conversation_id'] ?? 0) !== $this->conversationId) {
+            return;
+        }
+
+        foreach ($this->messages as $message) {
+            if ($message['id'] === $messageId) {
+                return;
+            }
+        }
+
+        $this->messages[] = [
+            'id' => $messageId,
+            'sender_type' => (string) ($event['sender_type'] ?? 'user'),
+            'body' => (string) ($event['body'] ?? ''),
+        ];
     }
 
     private function refreshConversation(QueryBusInterface $queryBus, SystemContext $context): void

@@ -825,8 +825,11 @@ Acceptance:
 
 Steps:
 
-- [ ] Define broadcast events and channels.
-- [ ] Wire Livewire listeners for chat and match updates.
+- [x] Define the `MessageSent` broadcast event and private conversation
+  channel.
+- [x] Wire the Livewire conversation panel listener for incoming messages.
+- [ ] Define remaining match, assistant starter, report, and read-state events.
+- [ ] Wire Livewire listeners for match updates.
 - [ ] Broadcast assistant starter and report events.
 - [ ] Add integration tests for channel authorization.
 - [ ] Commit: `feat: add realtime dating events`.

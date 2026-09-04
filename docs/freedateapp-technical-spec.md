@@ -61,8 +61,10 @@ Current implementation status:
 - Filament has a registered admin panel at `/admin-panel` with read-only list
   and detail resources for users, dating profiles, reports, audit logs, and
   metric events.
-- Reverb is configured and running, but domain broadcast events and Livewire
-  listeners are still planned.
+- Reverb is configured and running. Chat message sending broadcasts a private
+  conversation event, and the Livewire conversation panel appends incoming
+  message events. Realtime match, read-state, assistant starter, and moderation
+  report events are still planned.
 
 ## MVP Module Map
 

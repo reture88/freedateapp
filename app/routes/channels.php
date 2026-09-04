@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\Conversation;
+use App\Models\User;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -20,4 +22,14 @@ use Illuminate\Support\Facades\Broadcast;
 
 Broadcast::channel('global-channel', static function () {
     return true;
+});
+
+Broadcast::channel('conversations.{conversation}', static function (User $user, int $conversation): bool {
+    return Conversation::query()
+        ->whereKey($conversation)
+        ->whereHas('connection', static function ($query) use ($user): void {
+            $query->whereHas('profileOne', static fn ($profileQuery) => $profileQuery->where('user_id', $user->getKey()))
+                ->orWhereHas('profileTwo', static fn ($profileQuery) => $profileQuery->where('user_id', $user->getKey()));
+        })
+        ->exists();
 });
