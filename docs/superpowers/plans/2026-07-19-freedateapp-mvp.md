@@ -4,9 +4,9 @@
 
 **Goal:** Build the Freedateapp MVP on the existing Laravel/CQRS skeleton: completed dating profiles, preferences, one-at-a-time discovery, mutual matches, chat, AI Szárnysegéd starter messages, reporting/blocking, account controls, and admin moderation.
 
-**Architecture:** Keep the existing Laravel 12 app and DDD/CQRS module pattern. Add focused domain modules under `app/src/` with single-action controllers, thin request handlers, domain services, Eloquent models, migrations, Blade views, and feature/unit tests. Use server-rendered Blade for MVP UI; avoid adding a frontend SPA until product behavior is proven.
+**Architecture:** Keep the existing Laravel 12 app and DDD/CQRS module pattern. Add focused domain modules under `app/src/` with single-action controllers, thin request handlers, domain services, Eloquent models, migrations, Livewire user-facing screens, Filament admin screens, Reverb realtime events, and feature/unit tests. Avoid adding a frontend SPA; prefer Laravel-native interactivity.
 
-**Tech Stack:** Laravel 12, PHP 8.4, MariaDB, Redis, Blade, PHPUnit, Larastan/PHPStan, PHP-CS-Fixer, Docker Compose.
+**Tech Stack:** Laravel 12, PHP 8.4, MariaDB, Redis, Livewire, Filament, Laravel Reverb, Blade layouts, PHPUnit, Larastan/PHPStan, PHP-CS-Fixer, Docker Compose.
 
 ---
 
@@ -35,6 +35,7 @@ Order:
 7. Safety, reports, blocks, account controls.
 8. Admin moderation and metrics.
 9. Design-readiness polish and final review.
+10. Livewire, Filament, and Reverb platform migration.
 
 Every story follows TDD where practical:
 
@@ -71,7 +72,11 @@ Create Eloquent models in `app/app/Models/` when persistence is needed:
 - `AuditLog`
 - `MetricEvent`
 
-Blade views live under `app/resources/views/<module>/`.
+Blade layouts and partials live under `app/resources/views/`. New user-facing
+workflow screens should be implemented as Livewire components under
+`app/app/Livewire/` with matching views under `app/resources/views/livewire/`.
+Admin and moderation workflows should use Filament resources and pages under
+`app/app/Filament/`.
 
 Tests live under:
 
@@ -748,6 +753,81 @@ Steps:
 - [ ] Admin report queue, moderation actions, audit logs, and metrics work.
 - [ ] All MVP screens have enough structure for Figma refinement.
 - [ ] No payment, boost, premium, video, or push-notification code is introduced.
+
+## Epic 10: Livewire, Filament, and Reverb Platform Migration
+
+**Goal:** Move the MVP from plain Blade workflow pages to Laravel-native
+interactive surfaces while preserving the existing CQRS/domain boundaries.
+
+### Story 10.1: Frontend Platform Packages and Layout Wiring
+
+Acceptance:
+
+- Livewire, Filament, and Reverb dependencies are installed.
+- Base layouts load Livewire assets.
+- Broadcasting/Reverb configuration exists and is documented.
+- Existing routes and tests keep passing.
+
+Steps:
+
+- [ ] Install Livewire, Filament, and Laravel Reverb through Composer.
+- [ ] Add Livewire scripts/styles to the authenticated layout.
+- [ ] Add Reverb environment defaults to `.env.example`.
+- [ ] Run tests and style checks.
+- [ ] Commit: `feat: add livewire filament reverb foundation`.
+
+### Story 10.2: Convert User Workflows to Livewire
+
+Acceptance:
+
+- Profile editing, preferences, discovery, match list, and chat use Livewire
+  components.
+- Components dispatch commands/queries instead of owning domain behavior.
+- Form validation remains in command/query DTOs or request-handler input
+  objects, not in controllers.
+- Chat keeps latest messages at the bottom and supports realtime append.
+
+Steps:
+
+- [ ] Convert profile edit and preferences screens.
+- [ ] Convert discovery card and decision actions.
+- [ ] Convert match list and conversation screen.
+- [ ] Add Livewire feature tests for key interactions.
+- [ ] Commit per coherent workflow.
+
+### Story 10.3: Build Filament Admin and Moderation
+
+Acceptance:
+
+- Admin users can review users, dating profiles, reports, audit logs, and
+  metrics in Filament.
+- Destructive moderation actions call domain services or command handlers.
+- Tables support filtering by moderation status, report category, and date.
+
+Steps:
+
+- [ ] Configure a Filament admin panel.
+- [ ] Add resources for users, profiles, reports, audit logs, and metrics.
+- [ ] Add guarded moderation actions.
+- [ ] Add feature tests or policy tests for authorization.
+- [ ] Commit: `feat: add filament moderation panel`.
+
+### Story 10.4: Reverb Realtime UX
+
+Acceptance:
+
+- New matches, incoming messages, read state, assistant starter messages, and
+  moderation reports broadcast over Reverb.
+- HTTP fallbacks remain functional when WebSockets are unavailable.
+- Frontend shows reconnect/sending/error states where relevant.
+
+Steps:
+
+- [ ] Define broadcast events and channels.
+- [ ] Wire Livewire listeners for chat and match updates.
+- [ ] Broadcast assistant starter and report events.
+- [ ] Add integration tests for channel authorization.
+- [ ] Commit: `feat: add realtime dating events`.
 
 ## Execution Recommendation
 

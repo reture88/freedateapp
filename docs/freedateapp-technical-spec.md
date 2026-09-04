@@ -27,6 +27,25 @@ New functionality must follow the existing conventions:
 - Commands and queries self-construct from arrays and validate where useful.
 - Module routes are auto-discovered by `RouteServiceProvider`.
 
+## Frontend Platform Direction
+
+Freedateapp should move to a Laravel-native interactive frontend stack:
+
+- Livewire is the primary layer for user-facing app screens: onboarding,
+  profile editing, preferences, discovery, matches, chat, and settings.
+- Filament is the primary layer for admin and operational screens: moderation,
+  reports, users, profiles, audit logs, and metrics.
+- Laravel Reverb is the default WebSocket server for realtime UX where it adds
+  clear value, especially chat message arrival, read state, match creation, and
+  moderation queue updates.
+
+The migration should be incremental. Existing Blade routes may stay in place
+while individual screens are replaced by Livewire components. Domain behavior
+still follows the CQRS convention: Livewire components dispatch commands and
+queries rather than embedding business logic. Filament resources may use
+Eloquent for simple read/list surfaces, but moderation actions and domain
+mutations must call services or command handlers.
+
 ## MVP Module Map
 
 ### Profile
@@ -345,6 +364,20 @@ Admin:
 - Audit log list
 - Metrics dashboard
 
+## Realtime Requirements
+
+Use Reverb-backed broadcasting for events that materially improve flow:
+
+- New matched conversation appears without a manual refresh.
+- Incoming chat messages append at the bottom of the conversation.
+- Read/delivered state updates without disturbing scroll position.
+- AI Szárnysegéd starter messages appear as assistant/system messages.
+- Admin report queue reflects newly submitted reports.
+
+Realtime updates must be progressive enhancement. Core actions still complete
+through normal HTTP requests so the app remains usable if WebSockets are
+temporarily unavailable.
+
 ## Design Requirements for Later Figma Work
 
 Figma artifacts should cover:
@@ -352,6 +385,10 @@ Figma artifacts should cover:
 - Responsive mobile-first screens for onboarding, discovery, matching, chat, and
   profile settings.
 - Desktop admin screens optimized for dense moderation workflows.
+- Livewire component states and events for user-facing screens.
+- Filament resource/page inventory for admin screens.
+- Reverb event annotations for chat, match, read state, assistant starter, and
+  moderation queue updates.
 - Component library: buttons, icon buttons, form controls, tags, profile cards,
   photo uploader, chat bubbles, assistant message bubble, report modals, status
   badges, tabs, empty states, and admin tables.
@@ -386,6 +423,8 @@ Every epic must finish with:
 - `docker compose exec php composer phpstan`
 - `docker compose exec php composer cs-check`
 - Manual smoke check in browser or curl for touched routes.
+- Playwright visual smoke for changed Livewire screens when frontend behavior or
+  layout changes.
 - Short review note in the implementation PR or commit message summary.
 
 ## Open Product Defaults

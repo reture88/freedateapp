@@ -125,6 +125,13 @@ Key UX needs:
 
 ## Core Components
 
+## Implementation Target
+
+Designs should assume the app frontend is implemented with Livewire for
+authenticated user flows, Filament for admin and moderation flows, and Laravel
+Reverb for realtime interaction. Figma annotations should name expected
+component states, realtime events, and admin resource surfaces where relevant.
+
 ### App Shell
 
 - Public layout for auth and basic pages.
@@ -198,6 +205,9 @@ Components:
 - Empty conversation prompt
 - Composer
 - Safety/report menu
+- Incoming message state
+- Sending and failed-send state
+- Reconnect indicator
 
 Assistant bubble requirements:
 
@@ -295,6 +305,12 @@ When creating Figma plans later, generate:
 - Component library with variants and states.
 - Prototype path from registration to first match and first chat.
 - Design annotations for privacy, safety, and AI Szárnysegéd behavior.
+- Livewire component inventory for onboarding, profile, discovery, matches,
+  chat, and settings.
+- Filament resource/page inventory for users, profiles, reports, audit logs, and
+  metrics.
+- Reverb event map for match creation, incoming message, read state, assistant
+  starter, and new moderation report.
 
 ## Acceptance Criteria for Design Phase
 
