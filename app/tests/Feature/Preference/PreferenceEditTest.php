@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Preference;
 
+use App\Livewire\Preference\EditPreferenceForm;
 use App\Models\DatingProfile;
 use App\Models\ProfilePreference;
 use App\Models\User;
+use App\Preference\Dto\PreferenceSummary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 final class PreferenceEditTest extends TestCase
@@ -51,7 +54,8 @@ final class PreferenceEditTest extends TestCase
             ->get('/dating-preferences/edit')
             ->assertOk()
             ->assertSee('Dating preferences')
-            ->assertSee('Preferred age');
+            ->assertSee('Preferred age')
+            ->assertSeeLivewire(EditPreferenceForm::class);
 
         $response = $this->actingAs($user)->post('/dating-preferences', [
             'preferred_age_min' => '28',
@@ -100,6 +104,52 @@ final class PreferenceEditTest extends TestCase
             'dating_profile_id' => $profile->getKey(),
             'preferred_age_min' => 48,
         ]);
+    }
+
+    public function test_livewire_preference_form_saves_through_command_bus(): void
+    {
+        [$user, $profile] = $this->createUserWithProfile();
+        $preference = ProfilePreference::query()->create([
+            'dating_profile_id' => $profile->getKey(),
+            'preferred_age_min' => 18,
+            'preferred_age_max' => 80,
+            'preferred_distance_km' => 50,
+            'preferred_genders' => ['woman'],
+            'preferred_orientations' => ['straight'],
+            'relationship_intents' => ['long_term'],
+            'exclude_ai_wingman_enabled' => false,
+            'dealbreakers' => [],
+            'soft_preferences' => [],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(EditPreferenceForm::class, [
+                'preference' => $preference,
+                'summary' => new PreferenceSummary([], 'Current preference summary'),
+            ])
+            ->set('preferredAgeMin', 29)
+            ->set('preferredAgeMax', 45)
+            ->set('preferredDistanceKm', 70)
+            ->set('preferredGenders', ['man', 'non_binary'])
+            ->set('preferredOrientations', ['bisexual'])
+            ->set('relationshipIntents', ['friendship'])
+            ->set('excludeAiWingmanEnabled', true)
+            ->set('dealbreakers', ['smoker'])
+            ->set('softPreferences', ['pets'])
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertSee('Dating preferences saved.');
+
+        $preference->refresh();
+        $this->assertSame(29, $preference->preferred_age_min);
+        $this->assertSame(45, $preference->preferred_age_max);
+        $this->assertSame(70, $preference->preferred_distance_km);
+        $this->assertSame(['man', 'non_binary'], $preference->preferred_genders);
+        $this->assertSame(['bisexual'], $preference->preferred_orientations);
+        $this->assertSame(['friendship'], $preference->relationship_intents);
+        $this->assertTrue($preference->exclude_ai_wingman_enabled);
+        $this->assertSame(['smoker'], $preference->dealbreakers);
+        $this->assertSame(['pets'], $preference->soft_preferences);
     }
 
     /**
