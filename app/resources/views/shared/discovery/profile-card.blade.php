@@ -4,31 +4,24 @@
 @php($sharedPublicTags = $candidate->tags()->wherePivot('visibility', 'public')->whereIn('profile_tags.id', $viewerPublicTagIds)->orderBy('profile_tags.label')->get())
 
 <article class="panel">
-    @if ($primaryPhoto)
-        <img src="{{ $primaryPhoto->publicUrl() }}" alt="{{ $candidate->display_name }} profile photo">
-    @endif
-    <h1>{{ $candidate->display_name }}</h1>
-    <p>{{ $candidate->birthdate->age }} • {{ $candidate->city }}, {{ $candidate->country_code }}</p>
-    <p>{{ $candidate->relationship_intent }}</p>
-    <p>{{ $candidate->bio }}</p>
-    @if ($sharedPublicTags->isNotEmpty())
-        <section class="shared-interest-list">
-            <h2>Shared interests</h2>
-            <div class="tag-list">
-                @foreach ($sharedPublicTags as $tag)
-                    <span>{{ $tag->label }}</span>
-                @endforeach
-            </div>
-        </section>
-    @endif
+    @include('components.profile-card', [
+        'displayName' => $candidate->display_name,
+        'age' => $candidate->birthdate->age,
+        'city' => $candidate->city,
+        'countryCode' => $candidate->country_code,
+        'relationshipIntent' => $candidate->relationship_intent,
+        'bio' => $candidate->bio,
+        'primaryPhotoUrl' => $primaryPhoto?->publicUrl(),
+        'sharedTags' => $sharedPublicTags->pluck('label')->all(),
+    ])
 
     <form method="POST" action="{{ route('discovery.accept', ['targetProfile' => $candidate->getKey()]) }}" class="stack">
         @csrf
-        <button type="submit">Accept</button>
+        <button class="button button--primary" type="submit">Accept</button>
     </form>
     <form method="POST" action="{{ route('discovery.reject', ['targetProfile' => $candidate->getKey()]) }}" class="stack">
         @csrf
-        <button type="submit">Reject</button>
+        <button class="button button--secondary" type="submit">Reject</button>
     </form>
     <form method="POST" action="{{ route('reports.submit') }}" class="stack">
         @csrf

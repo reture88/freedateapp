@@ -217,6 +217,8 @@ input[type="email"],
 input[type="password"],
 input[type="text"],
 input[type="number"],
+input[type="date"],
+input[type="file"],
 textarea,
 select {
     width: 100%;
@@ -281,13 +283,16 @@ select {
     padding-left: 18px;
 }
 
-.alert--error {
+.alert--error,
+.alert-error {
     background: #fff1f0;
     color: var(--color-danger);
 }
 
 .alert--success,
-.alert--status {
+.alert--status,
+.alert-success,
+.alert-status {
     background: #edf8f2;
     color: var(--color-success);
 }
@@ -710,6 +715,57 @@ select {
     margin-bottom: 18px;
 }
 
+.profile-card {
+    display: grid;
+    grid-template-columns: minmax(180px, 260px) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+}
+
+.profile-card__photo,
+.profile-card__placeholder {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface-muted);
+}
+
+.profile-card__photo {
+    object-fit: cover;
+}
+
+.profile-card__placeholder {
+    display: grid;
+    place-items: center;
+    color: var(--color-primary);
+    font-size: 52px;
+    font-weight: 700;
+}
+
+.profile-card__body {
+    min-width: 0;
+}
+
+.profile-card__title {
+    margin: 0 0 8px;
+}
+
+.profile-card__meta,
+.profile-card__bio,
+.profile-card__intent {
+    margin: 0 0 12px;
+}
+
+.profile-card__meta {
+    color: var(--color-muted);
+}
+
+.profile-card__bio {
+    max-width: 68ch;
+    white-space: pre-line;
+}
+
 .profile-photo-card__footer {
     min-height: 40px;
 }
@@ -786,6 +842,13 @@ select {
     margin: 16px 0;
 }
 
+.inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
 .conversation-header {
     display: flex;
     align-items: center;
@@ -847,6 +910,7 @@ select {
     }
 
     .catalog-filter,
+    .profile-card,
     .product-detail,
     .profile-detail,
     .cart-layout,
@@ -863,11 +927,11 @@ select {
         grid-column: auto;
     }
 }
-button:focus,
-a:focus,
-input:focus,
-select:focus,
-textarea:focus {
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
     outline: 3px solid #2563eb;
     outline-offset: 2px;
 }
@@ -888,6 +952,11 @@ textarea:focus {
 
 .status-badge--resolved {
     background: #dcfce7;
+}
+
+.status-badge--intent {
+    background: #e8f3ef;
+    color: var(--color-primary-dark);
 }
 
 .button--danger {

@@ -1,29 +1,20 @@
 <div>
     @if ($candidateData)
         <article class="panel">
-            @if ($candidateData['primary_photo_url'])
-                <img src="{{ $candidateData['primary_photo_url'] }}" alt="{{ $candidateData['display_name'] }} profile photo">
-            @endif
-
-            <h1>{{ $candidateData['display_name'] }}</h1>
-            <p>{{ $candidateData['age'] }} • {{ $candidateData['city'] }}, {{ $candidateData['country_code'] }}</p>
-            <p>{{ $candidateData['relationship_intent'] }}</p>
-            <p>{{ $candidateData['bio'] }}</p>
-
-            @if ($candidateData['shared_tags'] !== [])
-                <section class="shared-interest-list">
-                    <h2>Shared interests</h2>
-                    <div class="tag-list">
-                        @foreach ($candidateData['shared_tags'] as $tag)
-                            <span>{{ $tag }}</span>
-                        @endforeach
-                    </div>
-                </section>
-            @endif
+            @include('components.profile-card', [
+                'displayName' => $candidateData['display_name'],
+                'age' => $candidateData['age'],
+                'city' => $candidateData['city'],
+                'countryCode' => $candidateData['country_code'],
+                'relationshipIntent' => $candidateData['relationship_intent'],
+                'bio' => $candidateData['bio'],
+                'primaryPhotoUrl' => $candidateData['primary_photo_url'],
+                'sharedTags' => $candidateData['shared_tags'],
+            ])
 
             <div class="stack">
-                <button type="button" wire:click="accept" wire:loading.attr="disabled" wire:target="accept,reject">Accept</button>
-                <button type="button" wire:click="reject" wire:loading.attr="disabled" wire:target="accept,reject">Reject</button>
+                <button class="button button--primary" type="button" wire:click="accept" wire:loading.attr="disabled" wire:target="accept,reject">Accept</button>
+                <button class="button button--secondary" type="button" wire:click="reject" wire:loading.attr="disabled" wire:target="accept,reject">Reject</button>
             </div>
 
             <form method="POST" action="{{ route('reports.submit') }}" class="stack">

@@ -685,13 +685,13 @@ Acceptance:
 
 Steps:
 
-- [ ] Inventory duplicated UI fragments.
-- [ ] Extract profile card partial.
-- [ ] Extract status badge partial.
-- [ ] Extract confirmation modal partial.
-- [ ] Extract assistant message partial.
-- [ ] Run affected feature tests.
-- [ ] Commit: `refactor: extract dating ui components`.
+- [x] Inventory duplicated UI fragments.
+- [x] Extract profile card partial.
+- [x] Extract status badge partial.
+- [x] Extract confirmation modal partial.
+- [x] Extract assistant message partial.
+- [x] Run affected feature tests.
+- [x] Commit: `refactor: extract dating ui components`.
 
 ### Story 9.2: Accessibility and Copy Pass
 
