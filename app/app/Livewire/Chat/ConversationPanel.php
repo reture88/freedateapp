@@ -20,6 +20,8 @@ use Livewire\Component;
 
 final class ConversationPanel extends Component
 {
+    public int $userId = 0;
+
     public int $conversationId;
 
     public int $connectionId;
@@ -37,12 +39,15 @@ final class ConversationPanel extends Component
     ];
 
     /**
-     * @var list<array{id: int, sender_type: string, body: string}>
+     * @var list<array{id: int, sender_user_id: int|null, sender_type: string, body: string, read_at: string|null}>
      */
     public array $messages = [];
 
     public function mount(ConversationView $conversationView): void
     {
+        /** @var User|null $user */
+        $user = Auth::user();
+        $this->userId = $user instanceof User ? (int) $user->getKey() : 0;
         $this->fillFromConversationView($conversationView);
     }
 
@@ -91,7 +96,7 @@ final class ConversationPanel extends Component
     }
 
     /**
-     * @param array{id?: int, conversation_id?: int, sender_type?: string, body?: string} $event
+     * @param array{id?: int, conversation_id?: int, sender_user_id?: int|null, sender_type?: string, body?: string, read_at?: string|null} $event
      */
     #[On('echo-private:conversations.{conversationId},MessageSent')]
     public function appendBroadcastedMessage(array $event): void
@@ -110,9 +115,33 @@ final class ConversationPanel extends Component
 
         $this->messages[] = [
             'id' => $messageId,
+            'sender_user_id' => isset($event['sender_user_id']) ? (int) $event['sender_user_id'] : null,
             'sender_type' => (string) ($event['sender_type'] ?? 'user'),
             'body' => (string) ($event['body'] ?? ''),
+            'read_at' => isset($event['read_at']) ? (string) $event['read_at'] : null,
         ];
+    }
+
+    /**
+     * @param array{conversation_id?: int, reader_user_id?: int, message_ids?: list<int>, read_at?: string} $event
+     */
+    #[On('echo-private:conversations.{conversationId},MessagesRead')]
+    public function applyBroadcastedReadState(array $event): void
+    {
+        if ((int) ($event['conversation_id'] ?? 0) !== $this->conversationId || (int) ($event['reader_user_id'] ?? 0) === $this->userId) {
+            return;
+        }
+
+        $readAt = (string) ($event['read_at'] ?? '');
+        $messageIds = array_map(static fn (mixed $id): int => (int) $id, $event['message_ids'] ?? []);
+
+        foreach ($this->messages as $index => $message) {
+            if ((int) ($message['sender_user_id'] ?? 0) !== $this->userId || !in_array($message['id'], $messageIds, true)) {
+                continue;
+            }
+
+            $this->messages[$index]['read_at'] = $readAt;
+        }
     }
 
     private function refreshConversation(QueryBusInterface $queryBus, SystemContext $context): void
@@ -147,8 +176,10 @@ final class ConversationPanel extends Component
         $this->messages = $conversationView->conversation->messages
             ->map(static fn ($message): array => [
                 'id' => (int) $message->getKey(),
+                'sender_user_id' => null === $message->sender_user_id ? null : (int) $message->sender_user_id,
                 'sender_type' => (string) $message->sender_type,
                 'body' => (string) $message->body,
+                'read_at' => $message->read_at?->toDateTimeString(),
             ])
             ->values()
             ->all();

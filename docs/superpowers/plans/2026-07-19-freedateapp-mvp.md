@@ -831,7 +831,7 @@ Steps:
 - [x] Define the `MatchCreated` event and private user channel.
 - [x] Reuse `MessageSent` for assistant starter messages.
 - [x] Define the `ReportSubmitted` event and admin reports channel.
-- [ ] Define remaining read-state events.
+- [x] Define read-state events.
 - [x] Wire Livewire listeners for match updates.
 - [x] Broadcast assistant starter and report events.
 - [x] Add integration tests for channel authorization.

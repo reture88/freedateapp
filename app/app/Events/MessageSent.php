@@ -28,15 +28,17 @@ final class MessageSent implements ShouldBroadcastNow
     }
 
     /**
-     * @return array<string, int|string>
+     * @return array<string, int|string|null>
      */
     public function broadcastWith(): array
     {
         return [
             'id' => (int) $this->message->getKey(),
             'conversation_id' => (int) $this->message->conversation_id,
+            'sender_user_id' => null === $this->message->sender_user_id ? null : (int) $this->message->sender_user_id,
             'sender_type' => (string) $this->message->sender_type,
             'body' => (string) $this->message->body,
+            'read_at' => $this->message->read_at?->toDateTimeString(),
         ];
     }
 }

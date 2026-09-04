@@ -4,18 +4,22 @@ declare(strict_types=1);
 
 namespace App\Chat\Presentation\Controller;
 
+use App\Chat\RequestHandler\MarkConversationRead\MarkConversationReadCommand;
 use App\Chat\RequestHandler\ShowConversation\ShowConversationQuery;
 use App\Chat\RequestHandler\ShowConversation\ShowConversationQueryResponse;
 use App\Models\User;
 use App\Shared\Dto\ValueObject\Context\SystemContext;
+use App\Shared\Infrastructure\Bus\Command\CommandBusInterface;
 use App\Shared\Infrastructure\Bus\Query\QueryBusInterface;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
 
 final readonly class ShowConversationController
 {
-    public function __construct(private QueryBusInterface $queryBus)
-    {
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private QueryBusInterface $queryBus,
+    ) {
     }
 
     public function __invoke(Request $request, int $conversation): View
@@ -24,6 +28,11 @@ final readonly class ShowConversationController
         $user = $request->user();
 
         try {
+            $this->commandBus->dispatchPayload(MarkConversationReadCommand::class, [
+                'user_id' => $user->getKey(),
+                'conversation_id' => $conversation,
+            ], new SystemContext((string) $user->getKey(), $request->ip()));
+
             $response = $this->queryBus->askPayload(ShowConversationQuery::class, [
                 'user_id' => $user->getKey(),
                 'conversation_id' => $conversation,

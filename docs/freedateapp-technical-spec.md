@@ -65,8 +65,8 @@ Current implementation status:
   conversation event, and the Livewire conversation panel appends incoming
   message events. New matches broadcast to private user channels and the
   Livewire match list prepends incoming match events. AI wingman starter
-  messages reuse the chat message event, and new safety reports broadcast to an
-  admin-only reports channel. Realtime read-state events are still planned.
+  messages reuse the chat message event, new safety reports broadcast to an
+  admin-only reports channel, and conversation reads broadcast receipt updates.
 
 ## MVP Module Map
 

@@ -6,6 +6,7 @@ namespace Tests\Feature\Chat;
 
 use App\Chat\Dto\ConversationView;
 use App\Events\MessageSent;
+use App\Events\MessagesRead;
 use App\Livewire\Chat\ConversationPanel;
 use App\Models\Connection;
 use App\Models\Conversation;
@@ -154,12 +155,14 @@ final class ConversationTest extends TestCase
             ->call('appendBroadcastedMessage', [
                 'id' => 999,
                 'conversation_id' => $conversation->getKey(),
+                'sender_user_id' => $second->user_id,
                 'sender_type' => 'user',
                 'body' => 'Realtime hello',
             ])
             ->call('appendBroadcastedMessage', [
                 'id' => 999,
                 'conversation_id' => $conversation->getKey(),
+                'sender_user_id' => $second->user_id,
                 'sender_type' => 'user',
                 'body' => 'Realtime hello',
             ])
@@ -167,10 +170,60 @@ final class ConversationTest extends TestCase
             ->assertSet('messages', [
                 [
                     'id' => 999,
+                    'sender_user_id' => $second->user_id,
                     'sender_type' => 'user',
                     'body' => 'Realtime hello',
+                    'read_at' => null,
                 ],
             ]);
+    }
+
+    public function test_opening_conversation_marks_incoming_messages_read_and_broadcasts_receipt(): void
+    {
+        [$first, $second, $conversation] = $this->createMatchedConversation();
+        $message = Message::query()->create([
+            'conversation_id' => $conversation->getKey(),
+            'sender_user_id' => $second->user_id,
+            'sender_type' => 'user',
+            'body' => 'Unread hello',
+            'read_at' => null,
+        ]);
+        Event::fake([MessagesRead::class]);
+
+        $this->actingAs($first->user)
+            ->get(sprintf('/conversations/%d', $conversation->getKey()))
+            ->assertOk()
+            ->assertSee('Unread hello');
+
+        $this->assertNotNull($message->fresh()->read_at);
+        Event::assertDispatched(MessagesRead::class, static fn (MessagesRead $event): bool => (int) $event->conversationId === (int) $conversation->getKey()
+            && $event->readerUserId === (int) $first->user_id
+            && $event->messageIds === [(int) $message->getKey()]);
+    }
+
+    public function test_livewire_conversation_panel_applies_broadcasted_read_state(): void
+    {
+        [$first, $second, $conversation] = $this->createMatchedConversation();
+        $message = Message::query()->create([
+            'conversation_id' => $conversation->getKey(),
+            'sender_user_id' => $first->user_id,
+            'sender_type' => 'user',
+            'body' => 'Read me',
+            'read_at' => null,
+        ]);
+
+        Livewire::actingAs($first->user)
+            ->test(ConversationPanel::class, [
+                'conversationView' => new ConversationView($conversation->load('messages'), $second),
+            ])
+            ->call('applyBroadcastedReadState', [
+                'conversation_id' => $conversation->getKey(),
+                'reader_user_id' => $second->user_id,
+                'message_ids' => [$message->getKey()],
+                'read_at' => '2026-07-19 13:00:00',
+            ])
+            ->assertSee('Seen')
+            ->assertSet('messages.0.read_at', '2026-07-19 13:00:00');
     }
 
     public function test_private_conversation_broadcast_channel_is_limited_to_matched_participants(): void

@@ -42,6 +42,9 @@
         @else
             <article>
                 <p>{{ $message['body'] }}</p>
+                @if ($message['sender_user_id'] === $userId && $message['read_at'])
+                    <p class="muted">Seen</p>
+                @endif
             </article>
         @endif
         <article>
