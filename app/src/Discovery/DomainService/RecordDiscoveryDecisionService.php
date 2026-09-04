@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Discovery\DomainService;
 
+use App\Discovery\RequestHandler\RecordDiscoveryDecision\RecordDiscoveryDecisionCommand;
+use App\Events\MatchCreated;
 use App\Models\Connection;
 use App\Models\DatingProfile;
 use App\Models\DiscoveryDecision;
 use App\Models\User;
-use App\Discovery\RequestHandler\RecordDiscoveryDecision\RecordDiscoveryDecisionCommand;
 use Illuminate\Support\Carbon;
 
 final class RecordDiscoveryDecisionService
@@ -50,6 +51,7 @@ final class RecordDiscoveryDecisionService
         $decisionColumn = (int) $viewer->getKey() === (int) $connection->profile_one_id
             ? 'profile_one_decision'
             : 'profile_two_decision';
+        $wasMatched = 'matched' === $connection->status;
 
         $connection->forceFill([$decisionColumn => 'accepted']);
 
@@ -63,7 +65,11 @@ final class RecordDiscoveryDecisionService
         $connection->save();
 
         if ('matched' === $connection->status) {
-            $connection->conversation()->firstOrCreate([]);
+            $conversation = $connection->conversation()->firstOrCreate([]);
+
+            if (!$wasMatched) {
+                MatchCreated::dispatch($connection->load(['profileOne', 'profileTwo']), (int) $conversation->getKey());
+            }
         }
     }
 }

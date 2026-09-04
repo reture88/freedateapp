@@ -10,6 +10,7 @@ use App\Models\Conversation;
 use App\Models\DatingProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 final class MatchListTest extends TestCase
@@ -81,6 +82,61 @@ final class MatchListTest extends TestCase
             ->get('/matches')
             ->assertOk()
             ->assertSee('No matches yet.');
+    }
+
+    public function test_livewire_match_list_prepends_broadcasted_match_once(): void
+    {
+        $viewer = $this->createProfile('matches.livewire.viewer@example.com', ['display_name' => 'Viewer']);
+        $other = $this->createProfile('matches.livewire.other@example.com', ['display_name' => 'Realtime Match']);
+
+        Livewire::actingAs($viewer->user)
+            ->test(MatchList::class, ['matches' => []])
+            ->call('prependBroadcastedMatch', [
+                'connection_id' => 123,
+                'conversation_id' => 456,
+                'matched_at' => '2026-07-19 12:00:00',
+                'profiles' => [
+                    ['id' => $viewer->getKey(), 'display_name' => 'Viewer', 'city' => 'Budapest'],
+                    ['id' => $other->getKey(), 'display_name' => 'Realtime Match', 'city' => 'Szeged'],
+                ],
+            ])
+            ->call('prependBroadcastedMatch', [
+                'connection_id' => 123,
+                'conversation_id' => 456,
+                'matched_at' => '2026-07-19 12:00:00',
+                'profiles' => [
+                    ['id' => $viewer->getKey(), 'display_name' => 'Viewer', 'city' => 'Budapest'],
+                    ['id' => $other->getKey(), 'display_name' => 'Realtime Match', 'city' => 'Szeged'],
+                ],
+            ])
+            ->assertSee('Realtime Match')
+            ->assertSet('matches', [
+                [
+                    'connection_id' => 123,
+                    'conversation_id' => 456,
+                    'display_name' => 'Realtime Match',
+                    'city' => 'Szeged',
+                    'matched_at' => '2026-07-19 12:00:00',
+                ],
+            ]);
+    }
+
+    public function test_private_user_broadcast_channel_is_limited_to_own_user(): void
+    {
+        $viewer = $this->createProfile('matches.broadcast.viewer@example.com');
+        $other = $this->createProfile('matches.broadcast.other@example.com');
+        $payload = [
+            'socket_id' => '1234.5678',
+            'channel_name' => sprintf('private-users.%d', $viewer->user_id),
+        ];
+
+        $this->actingAs($viewer->user)
+            ->post('/broadcasting/auth', $payload)
+            ->assertOk();
+
+        $this->actingAs($other->user)
+            ->post('/broadcasting/auth', $payload)
+            ->assertForbidden();
     }
 
     /**

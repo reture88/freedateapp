@@ -33,3 +33,5 @@ Broadcast::channel('conversations.{conversation}', static function (User $user, 
         })
         ->exists();
 });
+
+Broadcast::channel('users.{user}', static fn (User $authenticatedUser, int $user): bool => (int) $authenticatedUser->getKey() === $user);

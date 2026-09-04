@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Discovery;
 
+use App\Events\MatchCreated;
 use App\Livewire\Discovery\DiscoveryCard;
 use App\Models\Connection;
 use App\Models\Conversation;
@@ -12,6 +13,7 @@ use App\Models\DiscoveryDecision;
 use App\Models\ProfilePreference;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -72,6 +74,7 @@ final class DiscoveryDecisionTest extends TestCase
         $second = $this->createProfile('match.second@example.com');
         $this->createPreference($first);
         $this->createPreference($second);
+        Event::fake([MatchCreated::class]);
 
         $this->actingAs($first->user)
             ->post(sprintf('/discovery/%d/accept', $second->getKey()))
@@ -86,6 +89,7 @@ final class DiscoveryDecisionTest extends TestCase
         $this->assertSame('accepted', $connection->profile_two_decision);
         $this->assertNotNull($connection->matched_at);
         $this->assertSame(1, Conversation::query()->whereBelongsTo($connection)->count());
+        Event::assertDispatched(MatchCreated::class, static fn (MatchCreated $event): bool => (int) $event->connection->getKey() === (int) $connection->getKey());
     }
 
     public function test_livewire_reject_records_decision_and_loads_next_candidate(): void
