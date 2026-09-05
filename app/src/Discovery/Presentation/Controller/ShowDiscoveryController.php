@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Discovery\Presentation\Controller;
 
+use App\Connection\RequestHandler\ListMatches\ListMatchesQuery;
+use App\Connection\RequestHandler\ListMatches\ListMatchesQueryResponse;
 use App\Discovery\RequestHandler\FindNextCandidate\FindNextCandidateQuery;
 use App\Discovery\RequestHandler\FindNextCandidate\FindNextCandidateQueryResponse;
 use App\Models\User;
@@ -22,12 +24,22 @@ final readonly class ShowDiscoveryController
     {
         /** @var User $user */
         $user = $request->user();
-        $response = $this->queryBus->askPayload(FindNextCandidateQuery::class, ['user_id' => $user->getKey()], new SystemContext((string) $user->getKey(), $request->ip()));
+        $context = new SystemContext((string) $user->getKey(), $request->ip());
+        $response = $this->queryBus->askPayload(FindNextCandidateQuery::class, ['user_id' => $user->getKey()], $context);
 
         if (!$response instanceof FindNextCandidateQueryResponse) {
             throw new \RuntimeException('Unexpected discovery response.');
         }
 
-        return view('discovery.show', ['candidate' => $response->candidate]);
+        $matchesResponse = $this->queryBus->askPayload(ListMatchesQuery::class, ['user_id' => $user->getKey()], $context);
+
+        if (!$matchesResponse instanceof ListMatchesQueryResponse) {
+            throw new \RuntimeException('Unexpected match list response.');
+        }
+
+        return view('discovery.show', [
+            'candidate' => $response->candidate,
+            'matches' => $matchesResponse->matches,
+        ]);
     }
 }
