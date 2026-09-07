@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Preference;
 
 use App\Livewire\Preference\EditPreferenceForm;
+use App\Livewire\Preference\DiscoveryFilterSheet;
 use App\Models\DatingProfile;
 use App\Models\ProfilePreference;
 use App\Models\User;
@@ -150,6 +151,78 @@ final class PreferenceEditTest extends TestCase
         $this->assertTrue($preference->exclude_ai_wingman_enabled);
         $this->assertSame(['smoker'], $preference->dealbreakers);
         $this->assertSame(['pets'], $preference->soft_preferences);
+    }
+
+    public function test_livewire_discovery_filter_sheet_saves_supported_filters(): void
+    {
+        [$user, $profile] = $this->createUserWithProfile();
+        $preference = ProfilePreference::query()->create([
+            'dating_profile_id' => $profile->getKey(),
+            'preferred_age_min' => 18,
+            'preferred_age_max' => 80,
+            'preferred_distance_km' => 50,
+            'preferred_genders' => ['woman'],
+            'preferred_orientations' => ['straight'],
+            'relationship_intents' => ['long_term'],
+            'exclude_ai_wingman_enabled' => true,
+            'dealbreakers' => ['smoker'],
+            'soft_preferences' => ['pets'],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(DiscoveryFilterSheet::class)
+            ->set('preferredAgeMin', 26)
+            ->set('preferredAgeMax', 35)
+            ->set('preferredDistanceKm', 25)
+            ->set('relationshipIntents', ['friendship', 'unsure'])
+            ->call('showMatches')
+            ->assertHasNoErrors()
+            ->assertRedirect(route('discovery.show'));
+
+        $preference->refresh();
+        $this->assertSame(26, $preference->preferred_age_min);
+        $this->assertSame(35, $preference->preferred_age_max);
+        $this->assertSame(25, $preference->preferred_distance_km);
+        $this->assertSame(['woman'], $preference->preferred_genders);
+        $this->assertSame(['straight'], $preference->preferred_orientations);
+        $this->assertSame(['friendship', 'unsure'], $preference->relationship_intents);
+        $this->assertTrue($preference->exclude_ai_wingman_enabled);
+        $this->assertSame(['smoker'], $preference->dealbreakers);
+        $this->assertSame(['pets'], $preference->soft_preferences);
+    }
+
+    public function test_livewire_discovery_filter_sheet_resets_to_default_preferences(): void
+    {
+        [$user, $profile] = $this->createUserWithProfile();
+        $preference = ProfilePreference::query()->create([
+            'dating_profile_id' => $profile->getKey(),
+            'preferred_age_min' => 31,
+            'preferred_age_max' => 41,
+            'preferred_distance_km' => 25,
+            'preferred_genders' => ['woman'],
+            'preferred_orientations' => ['straight'],
+            'relationship_intents' => ['friendship'],
+            'exclude_ai_wingman_enabled' => true,
+            'dealbreakers' => ['smoker'],
+            'soft_preferences' => ['pets'],
+        ]);
+
+        Livewire::actingAs($user)
+            ->test(DiscoveryFilterSheet::class)
+            ->call('resetFilters')
+            ->assertHasNoErrors()
+            ->assertRedirect(route('discovery.show'));
+
+        $preference->refresh();
+        $this->assertSame(18, $preference->preferred_age_min);
+        $this->assertSame(80, $preference->preferred_age_max);
+        $this->assertSame(50, $preference->preferred_distance_km);
+        $this->assertSame(['woman', 'man', 'non_binary', 'other'], $preference->preferred_genders);
+        $this->assertSame(['straight', 'gay', 'lesbian', 'bisexual', 'pansexual', 'queer', 'other'], $preference->preferred_orientations);
+        $this->assertSame(['long_term', 'short_term', 'friendship', 'unsure'], $preference->relationship_intents);
+        $this->assertFalse($preference->exclude_ai_wingman_enabled);
+        $this->assertSame([], $preference->dealbreakers);
+        $this->assertSame([], $preference->soft_preferences);
     }
 
     /**

@@ -2478,6 +2478,10 @@ textarea:focus-visible {
     display: none;
 }
 
+.discovery-filter-trigger {
+    display: none;
+}
+
 @media (max-width: 760px) {
     .public-shell--discovery {
         min-width: 0;
@@ -2520,6 +2524,14 @@ textarea:focus-visible {
         border-radius: 22px;
         background: var(--mtam-color-bg-surface);
         font-size: 12px;
+    }
+
+    .public-shell--discovery .discovery-filter-link {
+        display: none;
+    }
+
+    .public-shell--discovery .discovery-filter-trigger {
+        display: inline-flex;
     }
 
     .public-shell--discovery .page {
@@ -2876,8 +2888,22 @@ textarea:focus-visible {
     display: none;
 }
 
+.filter-sheet {
+    display: none;
+}
+
+.profile-detail-sheet {
+    display: none;
+}
+
+.profile-detail-trigger {
+    display: none;
+}
+
 @media (max-width: 760px) {
-    body:has(.public-shell--discovery .compatibility-sheet[open]) {
+    body:has(.public-shell--discovery .compatibility-sheet[open]),
+    body:has(.public-shell--discovery .filter-sheet[open]),
+    body:has(.public-shell--discovery .profile-detail-sheet[open]) {
         overflow: hidden;
     }
 
@@ -2910,6 +2936,473 @@ textarea:focus-visible {
 
     .public-shell--discovery .compatibility-sheet::backdrop {
         background: rgba(17, 17, 17, 0.24);
+    }
+
+    .public-shell--discovery .filter-sheet[open] {
+        position: fixed;
+        z-index: 55;
+        inset: 0;
+        display: block;
+        width: 100dvw;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        border: 0;
+        background: transparent;
+    }
+
+    .public-shell--discovery .filter-sheet::backdrop {
+        background: rgba(17, 17, 17, 0.24);
+    }
+
+    .public-shell--discovery .profile-detail-sheet[open] {
+        position: fixed;
+        z-index: 55;
+        inset: 0;
+        display: block;
+        width: 100dvw;
+        max-width: none;
+        height: 100dvh;
+        max-height: none;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        border: 0;
+        background: transparent;
+    }
+
+    .public-shell--discovery .profile-detail-sheet::backdrop {
+        background: rgba(17, 17, 17, 0.24);
+    }
+
+    .public-shell--discovery .filter-sheet__panel {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        width: 100%;
+        height: min(735px, calc(100dvh - 20px));
+        max-height: min(735px, calc(100dvh - 20px));
+        flex-direction: column;
+        gap: 12px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 10px 16px 18px;
+        border: 0;
+        border-radius: 18px 18px 0 0;
+        background: var(--mtam-color-bg-surface);
+        box-shadow: 0 -16px 44px rgba(17, 17, 17, 0.16);
+    }
+
+    .public-shell--discovery .filter-sheet__handle {
+        width: 36px;
+        height: 4px;
+        flex: 0 0 auto;
+        border-radius: 2px;
+        background: var(--mtam-color-border-default);
+    }
+
+    .public-shell--discovery .filter-sheet__header {
+        display: flex;
+        width: 100%;
+        min-height: 30px;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .public-shell--discovery .filter-sheet__header h2 {
+        margin: 0;
+        color: var(--mtam-color-text-primary);
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .public-shell--discovery .filter-sheet__reset {
+        display: grid;
+        min-width: 44px;
+        min-height: 44px;
+        place-items: center;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: var(--mtam-color-text-secondary);
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    .public-shell--discovery .filter-sheet__error {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 12px;
+        background: #fff1f1;
+        color: #9f1d1d;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .public-shell--discovery .filter-sheet__group {
+        display: flex;
+        width: 100%;
+        flex: 0 0 auto;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .public-shell--discovery .filter-sheet__group h3 {
+        margin: 0;
+        color: var(--mtam-color-text-primary);
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.25;
+    }
+
+    .public-shell--discovery .filter-sheet__choice-grid {
+        display: flex;
+        width: 100%;
+        gap: 7px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .public-shell--discovery .filter-sheet__choice-grid::-webkit-scrollbar {
+        display: none;
+    }
+
+    .public-shell--discovery .filter-sheet__choice,
+    .public-shell--discovery .filter-sheet__disabled-choice {
+        position: relative;
+        display: flex;
+        min-width: 50px;
+        height: 86px;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 12px;
+        border: 1px solid var(--mtam-color-border-default);
+        border-radius: 16px;
+        background: var(--mtam-color-bg-surface);
+        color: var(--mtam-color-text-primary);
+        font-size: 12px;
+        line-height: 1.2;
+        text-align: center;
+    }
+
+    .public-shell--discovery .filter-sheet__choice {
+        cursor: pointer;
+    }
+
+    .public-shell--discovery .filter-sheet__choice input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+    }
+
+    .public-shell--discovery .filter-sheet__choice span {
+        display: block;
+        max-width: 100%;
+    }
+
+    .public-shell--discovery .filter-sheet__choice:has(input:checked),
+    .public-shell--discovery .filter-sheet__disabled-choice--selected {
+        border-color: var(--mtam-color-action-soft);
+        background: var(--mtam-color-action-soft);
+        font-weight: 800;
+    }
+
+    .public-shell--discovery .filter-sheet__choice:focus-within {
+        outline: 2px solid var(--mtam-color-action-primary);
+        outline-offset: 2px;
+    }
+
+    .public-shell--discovery .filter-sheet__choice-grid--intent .filter-sheet__choice {
+        flex: 1 1 calc(50% - 4px);
+        min-width: 0;
+        height: 72px;
+    }
+
+    .public-shell--discovery .filter-sheet__choice-grid--intent {
+        flex-wrap: wrap;
+        overflow: visible;
+    }
+
+    .public-shell--discovery .filter-sheet__choice-grid--personality .filter-sheet__disabled-choice {
+        min-width: 46px;
+        opacity: 0.72;
+    }
+
+    .public-shell--discovery .filter-sheet__choice-grid--personality .filter-sheet__disabled-choice:nth-child(2) {
+        min-width: 130px;
+    }
+
+    .public-shell--discovery .filter-sheet__age-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .public-shell--discovery .filter-sheet__age-header strong {
+        color: var(--mtam-color-text-primary);
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.25;
+        white-space: nowrap;
+    }
+
+    .public-shell--discovery .filter-sheet__range-pair {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+    }
+
+    .public-shell--discovery .filter-sheet__range-pair label {
+        display: grid;
+        grid-template-columns: 1fr;
+        min-height: 44px;
+        align-items: center;
+        gap: 4px;
+        margin: 0;
+        color: var(--mtam-color-text-secondary);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .public-shell--discovery .filter-sheet__range-pair input[type="range"] {
+        width: 100%;
+        height: 24px;
+        accent-color: var(--mtam-color-action-primary);
+    }
+
+    .public-shell--discovery .filter-sheet__submit {
+        position: sticky;
+        bottom: -2px;
+        display: inline-flex;
+        width: 100%;
+        min-height: 48px;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 2px;
+        border: 0;
+        border-radius: 24px;
+        background: var(--mtam-color-action-primary);
+        color: var(--mtam-color-text-primary);
+        font-size: 14px;
+        font-weight: 800;
+    }
+
+    .public-shell--discovery .profile-detail-trigger {
+        display: inline-flex;
+        width: calc(100% - 32px);
+        min-height: 44px;
+        align-items: center;
+        justify-content: center;
+        margin: -4px 16px 14px;
+        padding: 0;
+        border: 0;
+        border-top: 1px solid var(--mtam-color-border-default);
+        border-radius: 0;
+        background: transparent;
+        color: var(--mtam-color-text-primary);
+        cursor: pointer;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__panel {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        display: flex;
+        width: 100%;
+        height: min(620px, calc(100dvh - 24px));
+        max-height: min(620px, calc(100dvh - 24px));
+        flex-direction: column;
+        gap: 14px;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 10px 16px 18px;
+        border-radius: 18px 18px 0 0;
+        background: var(--mtam-color-bg-surface);
+        box-shadow: 0 -16px 44px rgba(17, 17, 17, 0.16);
+    }
+
+    .public-shell--discovery .profile-detail-sheet__handle {
+        width: 36px;
+        height: 4px;
+        flex: 0 0 auto;
+        border-radius: 2px;
+        background: var(--mtam-color-border-default);
+    }
+
+    .public-shell--discovery .profile-detail-sheet__header {
+        display: flex;
+        width: 100%;
+        min-height: 44px;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__header h2 {
+        min-width: 0;
+        margin: 0;
+        overflow: hidden;
+        color: var(--mtam-color-text-primary);
+        font-size: 20px;
+        font-weight: 800;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__close {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0;
+        border-radius: 22px;
+        background: var(--mtam-color-bg-subtle);
+        color: var(--mtam-color-text-primary);
+        cursor: pointer;
+        font: inherit;
+        font-size: 24px;
+        line-height: 1;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__bio {
+        width: 100%;
+        margin: 0;
+        color: var(--mtam-color-text-primary);
+        font-size: 15px;
+        line-height: 22px;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__divider {
+        width: 100%;
+        height: 1px;
+        flex: 0 0 auto;
+        background: var(--mtam-color-border-default);
+    }
+
+    .public-shell--discovery .profile-detail-sheet__section {
+        display: grid;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__section h3 {
+        margin: 0;
+        color: var(--mtam-color-text-muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0;
+        line-height: 1.25;
+        text-transform: uppercase;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__chips span {
+        display: inline-flex;
+        max-width: 100%;
+        min-height: 28px;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        padding: 0 10px;
+        border-radius: 14px;
+        background: var(--mtam-color-bg-subtle);
+        color: var(--mtam-color-text-secondary);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__rows {
+        display: grid;
+        gap: 0;
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+        border-radius: 14px;
+        background: var(--mtam-color-bg-subtle);
+    }
+
+    .public-shell--discovery .profile-detail-sheet__rows div {
+        display: grid;
+        grid-template-columns: minmax(90px, auto) minmax(0, 1fr);
+        min-height: 42px;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        background: var(--mtam-color-bg-surface);
+    }
+
+    .public-shell--discovery .profile-detail-sheet__rows dt,
+    .public-shell--discovery .profile-detail-sheet__rows dd {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__rows dt {
+        color: var(--mtam-color-text-secondary);
+        font-weight: 400;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__rows dd {
+        min-width: 0;
+        overflow-wrap: anywhere;
+        color: var(--mtam-color-text-primary);
+        font-weight: 800;
+        text-align: right;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__safety {
+        display: flex;
+        width: 100%;
+        min-height: 44px;
+        align-items: center;
+        gap: 18px;
+        margin-top: 10px;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__safety form {
+        margin: 0;
+    }
+
+    .public-shell--discovery .profile-detail-sheet__safety .button--text {
+        min-width: 44px;
+        min-height: 44px;
+        color: var(--mtam-color-text-muted);
+        font-size: 11.5px;
     }
 
     .public-shell--discovery .compatibility-sheet__panel {
@@ -3353,5 +3846,197 @@ textarea:focus-visible {
 
     .public-shell--matches .match-screen__empty {
         padding: 34px 0 18px;
+    }
+}
+
+.public-shell--messages .page {
+    min-height: calc(100vh - 76px);
+    padding: 32px;
+}
+
+.public-shell--messages .message-screen {
+    width: min(760px, 100%);
+    margin: 0 auto;
+    padding: 24px;
+    border: 1px solid var(--mtam-color-border-default);
+    border-radius: 18px;
+    background: var(--mtam-color-bg-surface);
+    box-shadow: none;
+}
+
+.message-screen__header {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 22px;
+}
+
+.message-screen__header h1 {
+    margin: 0;
+    color: var(--mtam-color-text-primary);
+    font-size: 28px;
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.message-screen__header p {
+    margin: 0;
+    color: var(--mtam-color-text-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.message-screen__section-label {
+    margin-bottom: 10px;
+    color: var(--mtam-color-text-muted);
+    font-size: 10.5px;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.message-list {
+    display: grid;
+    gap: 4px;
+}
+
+.message-list__item {
+    display: flex;
+    min-height: 68px;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 14px;
+    color: var(--mtam-color-text-primary);
+    text-decoration: none;
+}
+
+.message-list__item:hover {
+    background: var(--mtam-color-bg-subtle);
+}
+
+.message-list__avatar {
+    display: grid;
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    place-items: center;
+    overflow: hidden;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ead8cf 0%, #cdb2ff 100%);
+    color: var(--mtam-color-text-primary);
+    font-size: 16px;
+    font-weight: 800;
+    object-fit: cover;
+}
+
+.message-list__copy {
+    display: grid;
+    min-width: 0;
+    flex: 1 1 auto;
+    gap: 2px;
+}
+
+.message-list__copy strong,
+.message-list__copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.message-list__copy strong {
+    color: var(--mtam-color-text-primary);
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.message-list__copy small {
+    color: var(--mtam-color-text-muted);
+    font-size: 11.5px;
+    line-height: 1.25;
+}
+
+.message-list__item--unread .message-list__copy small {
+    color: var(--mtam-color-personality-primary);
+}
+
+.message-list__state-dot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+    background: var(--mtam-color-personality-primary);
+}
+
+.message-screen__guidance {
+    display: grid;
+    gap: 5px;
+    margin-top: 30px;
+    padding: 12px;
+    border-radius: 14px;
+    background: var(--mtam-color-bg-subtle);
+}
+
+.message-screen__guidance h2,
+.message-screen__guidance p {
+    margin: 0;
+}
+
+.message-screen__guidance h2 {
+    color: var(--mtam-color-text-primary);
+    font-size: 12.5px;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.message-screen__guidance p {
+    color: var(--mtam-color-text-muted);
+    font-size: 11px;
+    line-height: 16px;
+}
+
+.message-screen__empty {
+    padding: 24px 0 6px;
+}
+
+@media (max-width: 760px) {
+    .public-shell--messages .topbar__nav--discovery .button {
+        width: 72px;
+    }
+
+    .public-shell--messages .page {
+        min-height: calc(100dvh - 64px);
+        padding: 22px 16px 104px;
+        overflow-x: hidden;
+    }
+
+    .public-shell--messages .message-screen {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .public-shell--messages .message-screen__header {
+        margin-bottom: 22px;
+    }
+
+    .public-shell--messages .message-screen__header h1 {
+        font-size: 24px;
+        line-height: 1.2;
+    }
+
+    .public-shell--messages .message-screen__section-label {
+        margin-bottom: 12px;
+    }
+
+    .public-shell--messages .message-list__item {
+        min-height: 68px;
+        padding: 8px 10px;
+    }
+
+    .public-shell--messages .message-screen__guidance {
+        margin-top: 30px;
     }
 }

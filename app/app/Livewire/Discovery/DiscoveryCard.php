@@ -29,7 +29,8 @@ final class DiscoveryCard extends Component
      *     relationship_intent: string,
      *     bio: string,
      *     primary_photo_url: string|null,
-     *     shared_tags: list<string>
+     *     shared_tags: list<string>,
+     *     public_tags: list<string>
      * }|null
      */
     public ?array $candidateData = null;
@@ -91,7 +92,8 @@ final class DiscoveryCard extends Component
      *     relationship_intent: string,
      *     bio: string,
      *     primary_photo_url: string|null,
-     *     shared_tags: list<string>
+     *     shared_tags: list<string>,
+     *     public_tags: list<string>
      * }|null
      */
     private function serializeCandidate(?DatingProfile $candidate): ?array
@@ -112,6 +114,11 @@ final class DiscoveryCard extends Component
             ->orderBy('profile_tags.label')
             ->pluck('profile_tags.label')
             ->all();
+        $publicTags = $candidate->tags()
+            ->wherePivot('visibility', 'public')
+            ->orderBy('profile_tags.label')
+            ->pluck('profile_tags.label')
+            ->all();
 
         return [
             'id' => (int) $candidate->getKey(),
@@ -124,6 +131,7 @@ final class DiscoveryCard extends Component
             'bio' => (string) $candidate->bio,
             'primary_photo_url' => $primaryPhoto?->publicUrl(),
             'shared_tags' => array_values(array_map(static fn (mixed $tag): string => (string) $tag, $sharedTags)),
+            'public_tags' => array_values(array_map(static fn (mixed $tag): string => (string) $tag, $publicTags)),
         ];
     }
 }

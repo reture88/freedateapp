@@ -9,10 +9,10 @@
         <span class="mobile-bottom-nav__icon" aria-hidden="true">&#9825;</span>
         <span>Matches</span>
     </a>
-    <span class="mobile-bottom-nav__item mobile-bottom-nav__item--disabled" aria-disabled="true">
+    <a class="mobile-bottom-nav__item{{ 'messages' === $active ? ' mobile-bottom-nav__item--active' : '' }}" href="{{ route('messages.index') }}" @if ('messages' === $active) aria-current="page" @endif>
         <span class="mobile-bottom-nav__icon" aria-hidden="true">&#9645;</span>
         <span>Messages</span>
-    </span>
+    </a>
     <a class="mobile-bottom-nav__item{{ 'profile' === $active ? ' mobile-bottom-nav__item--active' : '' }}" href="{{ route('profile.show') }}" @if ('profile' === $active) aria-current="page" @endif>
         <span class="mobile-bottom-nav__icon" aria-hidden="true">&#9817;</span>
         <span>Profile</span>

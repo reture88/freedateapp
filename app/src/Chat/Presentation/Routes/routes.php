@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Chat\Presentation\Controller\SendMessageController;
+use App\Chat\Presentation\Controller\ListMessagesController;
 use App\Chat\Presentation\Controller\ShowConversationController;
 use Illuminate\Support\Facades\Route;
 
@@ -13,4 +14,9 @@ Route::middleware('auth')->group(static function (): void {
     Route::post('/conversations/{conversation}/messages', SendMessageController::class)
         ->whereNumber('conversation')
         ->name('conversations.messages.send');
+});
+
+Route::middleware(['auth', 'dating.profile'])->group(static function (): void {
+    Route::get('/messages', ListMessagesController::class)
+        ->name('messages.index');
 });

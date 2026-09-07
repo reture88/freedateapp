@@ -6,6 +6,8 @@
             $compatibilityWidth = max(0, min(100, $compatibilityScore));
             $intentLabel = str_replace('_', ' ', $candidateData['relationship_intent']);
             $sharedInterestSummary = $sharedTagCount > 0 ? implode(' · ', $candidateData['shared_tags']) : 'No shared interests yet';
+            $firstName = trim(explode(' ', $candidateData['display_name'])[0]) ?: $candidateData['display_name'];
+            $profileInterests = $candidateData['public_tags'] !== [] ? $candidateData['public_tags'] : $candidateData['shared_tags'];
         @endphp
 
         <main class="discovery-workspace" aria-label="Profile discovery">
@@ -34,6 +36,9 @@
                     'sharedTags' => $candidateData['shared_tags'],
                     'variant' => 'discovery',
                 ])
+                <button class="profile-detail-trigger" type="button" onclick="document.getElementById('profile-detail-sheet')?.showModal()">
+                    More about {{ $firstName }}
+                </button>
             </article>
 
             <div class="discovery-primary-actions" aria-label="Profile actions">
@@ -179,6 +184,69 @@
                     <p>Ask {{ $candidateData['display_name'] }} about something from their profile.</p>
                     <button class="button compatibility-sheet__opener" type="button" disabled aria-disabled="true">Use opener</button>
                 </section>
+            </section>
+        </dialog>
+
+        <dialog class="profile-detail-sheet" id="profile-detail-sheet" aria-labelledby="profile-detail-sheet-title" onclick="if (event.target === this) this.close()">
+            <section class="profile-detail-sheet__panel" aria-label="Profile details">
+                <div class="profile-detail-sheet__handle" aria-hidden="true"></div>
+                <header class="profile-detail-sheet__header">
+                    <h2 id="profile-detail-sheet-title">About {{ $firstName }}</h2>
+                    <button class="profile-detail-sheet__close" type="button" onclick="document.getElementById('profile-detail-sheet')?.close()" aria-label="Close profile details">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </header>
+
+                @if ($candidateData['bio'] !== '')
+                    <p class="profile-detail-sheet__bio">&ldquo;{{ $candidateData['bio'] }}&rdquo;</p>
+                    <div class="profile-detail-sheet__divider" aria-hidden="true"></div>
+                @endif
+
+                @if ($profileInterests !== [])
+                    <section class="profile-detail-sheet__section" aria-labelledby="profile-detail-interests-title">
+                        <h3 id="profile-detail-interests-title">Interests</h3>
+                        <div class="profile-detail-sheet__chips">
+                            @foreach ($profileInterests as $tag)
+                                <span>{{ $tag }}</span>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+
+                <section class="profile-detail-sheet__section" aria-labelledby="profile-detail-intent-title">
+                    <h3 id="profile-detail-intent-title">Personality &amp; intent</h3>
+                    <dl class="profile-detail-sheet__rows">
+                        <div>
+                            <dt>Looking for</dt>
+                            <dd>{{ ucfirst($intentLabel) }}</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <div class="profile-detail-sheet__safety" aria-label="Safety actions">
+                    <form method="POST" action="{{ route('reports.submit') }}">
+                        @csrf
+                        <input type="hidden" name="target_type" value="profile">
+                        <input type="hidden" name="target_id" value="{{ $candidateData['id'] }}">
+                        <input type="hidden" name="category" value="profile_concern">
+                        @include('components.confirm-button', [
+                            'label' => 'Report',
+                            'message' => 'Submit a safety report for this profile?',
+                            'class' => 'button button--text',
+                        ])
+                    </form>
+
+                    <form method="POST" action="{{ route('blocks.submit') }}">
+                        @csrf
+                        <input type="hidden" name="blocked_user_id" value="{{ $candidateData['user_id'] }}">
+                        <input type="hidden" name="reason_category" value="safety">
+                        @include('components.confirm-button', [
+                            'label' => 'Block',
+                            'message' => 'Block this user and hide any shared chat?',
+                            'class' => 'button button--text',
+                        ])
+                    </form>
+                </div>
             </section>
         </dialog>
     @else

@@ -19,7 +19,7 @@ final class MatchList extends Component
     public int $profileId = 0;
 
     /**
-     * @var list<array{connection_id: int, conversation_id: int, display_name: string, age: int|null, city: string, primary_photo_url: string|null, matched_at: string|null, unread_count: int, state: string, status_label: string}>
+     * @var list<array{connection_id: int, conversation_id: int, display_name: string, age: int|null, city: string, primary_photo_url: string|null, matched_at: string|null, unread_count: int, latest_message_preview: string|null, latest_message_at: string|null, state: string, status_label: string}>
      */
     public array $matches = [];
 
@@ -40,6 +40,8 @@ final class MatchList extends Component
             'primary_photo_url' => $match->primaryPhotoUrl,
             'matched_at' => $match->matchedAt,
             'unread_count' => $match->unreadCount,
+            'latest_message_preview' => $match->latestMessagePreview,
+            'latest_message_at' => $match->latestMessageAt,
             'state' => $this->matchState($match->matchedAt, $match->unreadCount),
             'status_label' => $this->matchStatusLabel($match->city, $match->matchedAt, $match->unreadCount),
         ], $matches);
@@ -88,6 +90,8 @@ final class MatchList extends Component
             'primary_photo_url' => null,
             'matched_at' => isset($event['matched_at']) ? (string) $event['matched_at'] : null,
             'unread_count' => 0,
+            'latest_message_preview' => null,
+            'latest_message_at' => null,
             'state' => $this->matchState(isset($event['matched_at']) ? (string) $event['matched_at'] : null, 0),
             'status_label' => 'New match',
         ]);

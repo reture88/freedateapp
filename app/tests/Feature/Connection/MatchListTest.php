@@ -137,6 +137,8 @@ final class MatchListTest extends TestCase
                     'primary_photo_url' => null,
                     'matched_at' => '2026-07-19 12:00:00',
                     'unread_count' => 0,
+                    'latest_message_preview' => null,
+                    'latest_message_at' => null,
                     'state' => 'default',
                     'status_label' => 'New match',
                 ],

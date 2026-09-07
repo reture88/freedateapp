@@ -51,6 +51,7 @@ final class DiscoveryCardTest extends TestCase
             'moderation_status' => 'approved',
         ]);
         $coffee = \App\Models\ProfileTag::query()->where('slug', 'coffee')->firstOrFail();
+        $running = \App\Models\ProfileTag::query()->where('slug', 'running')->firstOrFail();
         $cats = \App\Models\ProfileTag::query()->where('slug', 'cats')->firstOrFail();
         $viewer->tags()->sync([
             $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
@@ -58,7 +59,8 @@ final class DiscoveryCardTest extends TestCase
         ]);
         $candidate->tags()->sync([
             $coffee->getKey() => ['visibility' => 'public', 'sort_order' => 0],
-            $cats->getKey() => ['visibility' => 'private_matching', 'sort_order' => 1],
+            $running->getKey() => ['visibility' => 'public', 'sort_order' => 1],
+            $cats->getKey() => ['visibility' => 'private_matching', 'sort_order' => 2],
         ]);
 
         $this->actingAs($viewer->user)
@@ -71,6 +73,11 @@ final class DiscoveryCardTest extends TestCase
             ->assertSee('profiles/marika.jpg')
             ->assertSee('Shared interests')
             ->assertSee('Coffee')
+            ->assertSee('More about Marika')
+            ->assertSee('About Marika')
+            ->assertSee('Interests')
+            ->assertSee('Running')
+            ->assertSee('Personality &amp; intent', false)
             ->assertDontSee('Cats')
             ->assertSee('Accept')
             ->assertSee('Reject');

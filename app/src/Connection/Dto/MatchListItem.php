@@ -15,6 +15,8 @@ final readonly class MatchListItem
         public ?string $primaryPhotoUrl,
         public ?string $matchedAt,
         public int $unreadCount,
+        public ?string $latestMessagePreview,
+        public ?string $latestMessageAt,
     ) {
     }
 }

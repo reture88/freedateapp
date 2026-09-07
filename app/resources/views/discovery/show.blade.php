@@ -10,7 +10,8 @@
 
 @section('topbar_nav')
     <nav class="topbar__nav topbar__nav--discovery" aria-label="Discovery actions">
-        <a class="button button--secondary button--compact" href="{{ route('dating-preferences.edit') }}">Filters</a>
+        <a class="button button--secondary button--compact discovery-filter-link" href="{{ route('dating-preferences.edit') }}">Filters</a>
+        <button class="button button--secondary button--compact discovery-filter-trigger" type="button" onclick="document.getElementById('discovery-filter-sheet')?.showModal()">Filters</button>
         <a class="button button--secondary button--compact" href="{{ route('dating-profile.edit') }}">Profile</a>
     </nav>
 @endsection
@@ -64,5 +65,6 @@
         <livewire:discovery.discovery-card :candidate="$candidate" />
     </section>
 
+    <livewire:preference.discovery-filter-sheet />
     @include('components.mobile-bottom-nav', ['active' => 'discover'])
 @endsection
