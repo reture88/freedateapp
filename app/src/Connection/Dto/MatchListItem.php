@@ -10,8 +10,11 @@ final readonly class MatchListItem
         public int $connectionId,
         public int $conversationId,
         public string $displayName,
+        public ?int $age,
         public string $city,
+        public ?string $primaryPhotoUrl,
         public ?string $matchedAt,
+        public int $unreadCount,
     ) {
     }
 }

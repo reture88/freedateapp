@@ -8,6 +8,8 @@ use App\Livewire\Connection\MatchList;
 use App\Models\Connection;
 use App\Models\Conversation;
 use App\Models\DatingProfile;
+use App\Models\Message;
+use App\Models\ProfilePhoto;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -51,7 +53,21 @@ final class MatchListTest extends TestCase
             'status' => 'matched',
             'matched_at' => '2026-07-19 12:00:00',
         ]);
-        Conversation::query()->create(['connection_id' => $matchedConnection->getKey()]);
+        ProfilePhoto::query()->create([
+            'dating_profile_id' => $matched->getKey(),
+            'path' => 'profile-photos/visible-match.jpg',
+            'sort_order' => 0,
+            'is_primary' => true,
+            'moderation_status' => 'approved',
+        ]);
+        $conversation = Conversation::query()->create(['connection_id' => $matchedConnection->getKey()]);
+        Message::query()->create([
+            'conversation_id' => $conversation->getKey(),
+            'sender_user_id' => $matched->user_id,
+            'sender_type' => 'user',
+            'body' => 'Hello',
+            'read_at' => null,
+        ]);
         Connection::createBetween($viewer, $pending, ['status' => 'pending']);
         Connection::createBetween($viewer, $unmatched, ['status' => 'unmatched', 'unmatched_at' => '2026-07-19 12:10:00']);
         Connection::createBetween($viewer, $blocked, ['status' => 'blocked', 'blocked_at' => '2026-07-19 12:20:00']);
@@ -65,7 +81,8 @@ final class MatchListTest extends TestCase
         $this->actingAs($viewer->user)
             ->get('/matches')
             ->assertOk()
-            ->assertSee('Visible Match')
+            ->assertSee('Visible Match, 34')
+            ->assertSee('Unread message')
             ->assertSee('Open chat')
             ->assertSeeLivewire(MatchList::class)
             ->assertDontSee('Pending Match')
@@ -115,8 +132,13 @@ final class MatchListTest extends TestCase
                     'connection_id' => 123,
                     'conversation_id' => 456,
                     'display_name' => 'Realtime Match',
+                    'age' => null,
                     'city' => 'Szeged',
+                    'primary_photo_url' => null,
                     'matched_at' => '2026-07-19 12:00:00',
+                    'unread_count' => 0,
+                    'state' => 'default',
+                    'status_label' => 'New match',
                 ],
             ]);
     }

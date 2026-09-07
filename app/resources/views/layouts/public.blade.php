@@ -4,7 +4,12 @@
 
 @section('body')
     <header class="topbar">
-        <a href="{{ route('home') }}" class="brand">@yield('brand_label', 'Freedateapp')</a>
+        <a href="{{ route('home') }}" class="brand">
+            <span class="brand__mark">@yield('brand_label', 'Freedateapp')</span>
+            @hasSection('brand_detail')
+                <span class="brand__detail">@yield('brand_detail')</span>
+            @endif
+        </a>
         @hasSection('topbar_nav')
             @yield('topbar_nav')
         @else

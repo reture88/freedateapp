@@ -38,5 +38,6 @@ class DatabaseSeeder extends Seeder
         );
 
         $this->call(DemoDatingProfileSeeder::class);
+        $this->call(MtamDemoScenarioSeeder::class);
     }
 }

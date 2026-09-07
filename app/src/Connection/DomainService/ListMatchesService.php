@@ -26,7 +26,7 @@ final class ListMatchesService
                     ->where('profile_one_id', $viewerProfile->getKey())
                     ->orWhere('profile_two_id', $viewerProfile->getKey());
             })
-            ->with(['profileOne.user', 'profileTwo.user', 'conversation'])
+            ->with(['profileOne.photos', 'profileOne.user', 'profileTwo.photos', 'profileTwo.user', 'conversation.messages'])
             ->orderByDesc('matched_at')
             ->get();
 
@@ -45,12 +45,22 @@ final class ListMatchesService
                 continue;
             }
 
+            $conversation = $connection->conversation ?? $connection->conversation()->firstOrCreate([]);
+            $primaryPhoto = $otherProfile->photos->where('is_primary', true)->sortBy('sort_order')->first()
+                ?? $otherProfile->photos->sortBy('sort_order')->first();
+            $unreadCount = $conversation->messages
+                ->filter(static fn ($message): bool => null === $message->read_at && (int) ($message->sender_user_id ?? 0) !== $query->userId)
+                ->count();
+
             $matches[] = new MatchListItem(
                 (int) $connection->getKey(),
-                (int) $connection->conversation()->firstOrCreate([])->getKey(),
+                (int) $conversation->getKey(),
                 $otherProfile->display_name,
+                $otherProfile->birthdate->age,
                 $otherProfile->city,
+                $primaryPhoto?->publicUrl(),
                 $connection->matched_at?->toDateTimeString(),
+                $unreadCount,
             );
         }
 

@@ -6,6 +6,7 @@ namespace App\Livewire\Connection;
 
 use App\Connection\Dto\MatchListItem;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -18,7 +19,7 @@ final class MatchList extends Component
     public int $profileId = 0;
 
     /**
-     * @var list<array{connection_id: int, conversation_id: int, display_name: string, city: string, matched_at: string|null}>
+     * @var list<array{connection_id: int, conversation_id: int, display_name: string, age: int|null, city: string, primary_photo_url: string|null, matched_at: string|null, unread_count: int, state: string, status_label: string}>
      */
     public array $matches = [];
 
@@ -30,12 +31,17 @@ final class MatchList extends Component
         $user = Auth::user();
         $this->userId = $user instanceof User ? (int) $user->getKey() : 0;
         $this->profileId = $user instanceof User ? (int) ($user->datingProfile?->getKey() ?? 0) : 0;
-        $this->matches = array_map(static fn (MatchListItem $match): array => [
+        $this->matches = array_map(fn (MatchListItem $match): array => [
             'connection_id' => $match->connectionId,
             'conversation_id' => $match->conversationId,
             'display_name' => $match->displayName,
+            'age' => $match->age,
             'city' => $match->city,
+            'primary_photo_url' => $match->primaryPhotoUrl,
             'matched_at' => $match->matchedAt,
+            'unread_count' => $match->unreadCount,
+            'state' => $this->matchState($match->matchedAt, $match->unreadCount),
+            'status_label' => $this->matchStatusLabel($match->city, $match->matchedAt, $match->unreadCount),
         ], $matches);
     }
 
@@ -77,8 +83,13 @@ final class MatchList extends Component
             'connection_id' => $connectionId,
             'conversation_id' => (int) ($event['conversation_id'] ?? 0),
             'display_name' => (string) ($otherProfile['display_name'] ?? ''),
+            'age' => null,
             'city' => (string) ($otherProfile['city'] ?? ''),
+            'primary_photo_url' => null,
             'matched_at' => isset($event['matched_at']) ? (string) $event['matched_at'] : null,
+            'unread_count' => 0,
+            'state' => $this->matchState(isset($event['matched_at']) ? (string) $event['matched_at'] : null, 0),
+            'status_label' => 'New match',
         ]);
     }
 
@@ -96,5 +107,31 @@ final class MatchList extends Component
         }
 
         return null;
+    }
+
+    private function matchState(?string $matchedAt, int $unreadCount): string
+    {
+        if ($unreadCount > 0) {
+            return 'unread';
+        }
+
+        if (null !== $matchedAt && CarbonImmutable::parse($matchedAt)->greaterThanOrEqualTo(CarbonImmutable::now()->subDays(7))) {
+            return 'new';
+        }
+
+        return 'default';
+    }
+
+    private function matchStatusLabel(string $city, ?string $matchedAt, int $unreadCount): string
+    {
+        if ($unreadCount > 0) {
+            return 1 === $unreadCount ? 'Unread message' : sprintf('%d unread messages', $unreadCount);
+        }
+
+        if (null !== $matchedAt && CarbonImmutable::parse($matchedAt)->greaterThanOrEqualTo(CarbonImmutable::now()->subDays(7))) {
+            return 'New match';
+        }
+
+        return '' !== $city ? $city : 'Recently active';
     }
 }
