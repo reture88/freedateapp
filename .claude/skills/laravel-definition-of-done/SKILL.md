@@ -36,9 +36,21 @@ Adapted from the reference implementation's `.windsurf/workflows/dod.md`. Everyt
    confirm the expected route(s) appear with no errors.
 
 5. **End-to-end smoke check**
-   Static analysis and tests don't prove a web flow works against the real stack. For anything touching a Controller, route, or view, drive it for real (curl or browser) against `http://localhost:8080` — see the `verify` skill for the general discipline. Check `docker compose exec php cat storage/logs/laravel.log` for anything unexpected afterward (absence of the file means nothing was logged).
+   Static analysis and tests don't prove a web flow works against the real stack. For anything touching a Controller, route, or view, drive it for real (curl or browser) against `http://localhost:8080`: start the stack with `docker compose up -d`, exercise the touched flow, and inspect the response. Check `docker compose exec php cat storage/logs/laravel.log` for anything unexpected afterward (absence of the file means nothing was logged).
 
-6. **Structural conventions**
+6. **Visual verification for UI changes**
+   If the change touches Blade, Livewire, Filament, or CSS, use the Figma + Playwright MCP flow in `figma-playwright-verification`: read the relevant Figma frame, screenshot the running screen at desktop and mobile widths, compare, and record the evidence. Static checks and PHPUnit do not prove a visual match.
+
+7. **Diff hygiene**
+   ```bash
+   git diff --check
+   ```
+   Must report no whitespace errors.
+
+8. **Delivery gate**
+   Before committing, check `delivery-workflow`: the change belongs to a GitHub Issue, the branch is `<issue>-<slug>`, and the commit has a `Changelog:` trailer.
+
+9. **Structural conventions**
    Cross-check the change against `laravel-cqrs-conventions` (this repo's skill) — thin Controller/Handler, logic in DomainService, no bare scalars for identifiers, no DB calls in Services.
 
 ## If you add a new composer dev dependency

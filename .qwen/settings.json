@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose *)",
+      "Bash(git *)",
+      "Bash(gh *)",
+      "mcp__figma",
+      "mcp__playwright"
+    ]
+  },
+  "mcpServers": {
+    "figma": {
+      "httpUrl": "https://mcp.figma.com/mcp",
+      "trust": true
+    },
+    "playwright": {
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ],
+      "trust": true
+    }
+  },
+  "$version": 4
+}

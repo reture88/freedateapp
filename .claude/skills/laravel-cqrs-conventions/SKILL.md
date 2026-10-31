@@ -25,9 +25,12 @@ Each module under `app/src/<Module>/` keeps these concerns strictly separate:
 - No DB/Eloquent queries inside a DomainService. If a module needs one, add a `Dto/Repository/{X}RepositoryInterface.php` + an Eloquent implementation, and bind it in `CqrsServiceProvider::register()`. (Prefer calling Eloquent models directly from the DomainService when the model *is* the aggregate root and no cross-cutting query logic is needed — that's what `Auth`/`User` currently do against `App\Models\User`. Only introduce a repository when there's real query complexity to hide.)
 - Never inject one repository into another (avoids container resolution loops).
 - Every property on a Value Object or Entity is strictly typed — no bare `int`/`string` standing in for a domain identifier.
-- No inline comments. DocBlocks only where the *why* isn't obvious from the code (this matches the project-wide rule in the root `CLAUDE.md`).
+- No inline comments. DocBlocks only where the *why* isn't obvious from the code (this matches the project-wide rule in the root `AGENTS.md`).
 - Nullable constructor parameters go last, with a default of `null`.
 - Backed enums only; case names UPPERCASE.
+- Single-value ValueObjects must not wrap nullable attributes. When a value is optional, pass `null` instead of instantiating the ValueObject.
+- Application/domain code must not read `config()` directly. Inject a typed config object when a value is needed.
+- Domain exceptions and ValueObject validation exceptions must use `Translator::transStatic('domain.<module>.<key>')`; do not hardcode user-facing messages.
 - When you change a Model/Entity's shape, update the matching migration, and the seeder/factory if one references it.
 - Match new foreign key column types exactly against the existing schema (e.g. `users.id` is an unsigned bigint — `user_id` columns must match).
 
