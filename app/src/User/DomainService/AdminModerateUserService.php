@@ -6,6 +6,7 @@ namespace App\User\DomainService;
 
 use App\Models\AuditLog;
 use App\Models\User;
+use App\User\Enum\AccountStatus;
 
 final class AdminModerateUserService
 {
@@ -14,8 +15,23 @@ final class AdminModerateUserService
         $before = $target->toArray();
 
         match ($action) {
-            'suspend', 'ban' => $target->forceFill(['is_active' => false])->save(),
-            'restore' => $target->forceFill(['is_active' => true])->save(),
+            'suspend' => $target->forceFill([
+                'account_status' => AccountStatus::SUSPENDED,
+                'is_active' => false,
+            ])->save(),
+            'ban' => $target->forceFill([
+                'account_status' => AccountStatus::BANNED,
+                'is_active' => false,
+            ])->save(),
+            'deactivate' => $target->forceFill([
+                'account_status' => AccountStatus::DEACTIVATED,
+                'is_active' => false,
+            ])->save(),
+            'restore' => $target->forceFill([
+                'account_status' => AccountStatus::ACTIVE,
+                'is_active' => true,
+                'deletion_requested_at' => null,
+            ])->save(),
             default => throw new \InvalidArgumentException('Invalid moderation action.'),
         };
 

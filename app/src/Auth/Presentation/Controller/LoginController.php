@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Auth\Presentation\Controller;
 
+use App\Auth\DomainService\AuthDestinationService;
 use App\Auth\DomainService\Exception\InvalidCredentialsException;
 use App\Auth\RequestHandler\Login\LoginCommand;
 use App\Shared\Dto\ValueObject\Context\SystemContext;
@@ -17,8 +18,10 @@ final readonly class LoginController
 {
     use InteractsWithErrorResponses;
 
-    public function __construct(private CommandBusInterface $commandBus)
-    {
+    public function __construct(
+        private CommandBusInterface $commandBus,
+        private AuthDestinationService $destinationService,
+    ) {
     }
 
     public function __invoke(Request $request): RedirectResponse
@@ -37,6 +40,12 @@ final readonly class LoginController
             return back()->withErrors(['email' => $exception->getMessage()])->withInput($request->only('email', 'remember'));
         }
 
-        return redirect()->intended(route('home'));
+        $user = $request->user();
+
+        if (null === $user) {
+            return redirect()->route('home');
+        }
+
+        return redirect()->intended(route($this->destinationService->routeNameFor($user)));
     }
 }

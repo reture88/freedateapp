@@ -10,9 +10,11 @@ use App\Models\User;
 use App\User\Dto\ValueObject\EmailAddress;
 use App\User\Dto\ValueObject\Name;
 use App\User\Dto\ValueObject\PlainPassword;
+use App\User\Enum\AccountStatus;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Auth\Events\Registered;
 
 final readonly class RegisterUserService
 {
@@ -30,8 +32,11 @@ final readonly class RegisterUserService
             'name' => $name->value(),
             'email' => $email->value(),
             'password' => Hash::make($password->value()),
+            'account_status' => AccountStatus::ACTIVE,
+            'is_active' => true,
         ]);
 
+        event(new Registered($user));
         Auth::login($user);
         Session::regenerate();
 

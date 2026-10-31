@@ -41,6 +41,6 @@ final readonly class RegisterController
                 ->withInput($request->only('name', 'email'));
         }
 
-        return redirect()->route('home')->with('success', 'Registration completed.');
+        return redirect()->route('verification.notice')->with('success', 'Account created.');
     }
 }

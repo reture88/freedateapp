@@ -3,5 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use App\Auth\Presentation\Controller\HomeController;
 
-Route::get('/', static fn () => view('home'))->name('home');
+Route::get('/', HomeController::class)->name('home');

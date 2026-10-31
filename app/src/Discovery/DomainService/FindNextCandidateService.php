@@ -9,6 +9,8 @@ use App\Models\Block;
 use App\Models\DatingProfile;
 use App\Models\DiscoveryDecision;
 use App\Models\ProfilePreference;
+use App\Profile\Support\AdultEligibility;
+use App\User\Enum\AccountStatus;
 use Carbon\CarbonImmutable;
 
 final class FindNextCandidateService
@@ -38,9 +40,12 @@ final class FindNextCandidateService
             ->whereNotIn('id', $excludedProfileIds)
             ->whereNotIn('user_id', $blockedUserIds)
             ->whereHas('user', static function ($query): void {
-                $query->where('is_active', true)->whereNull('deletion_requested_at');
+                $query
+                    ->where('account_status', AccountStatus::ACTIVE->value)
+                    ->whereNotNull('email_verified_at');
             })
             ->whereNotNull('completed_at')
+            ->whereDate('birthdate', '<=', AdultEligibility::latestEligibleBirthdate()->toDateString())
             ->where('visibility_status', 'visible')
             ->where('moderation_status', 'approved')
             ->whereIn('gender', $preference->preferred_genders)

@@ -72,6 +72,7 @@ final class ProfileTagSelectionTest extends TestCase
         return User::query()->create([
             'name' => 'Tagged User',
             'email' => 'tagged@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

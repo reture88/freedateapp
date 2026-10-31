@@ -1,34 +1,57 @@
 @extends('layouts.auth')
 
-@section('title', 'Bejelentkezes')
+@section('title', 'Log in')
 
 @section('content')
-    <form method="POST" action="{{ route('auth.login') }}" class="form-card">
-        @csrf
+    @component('auth.partials.shell', [
+        'title' => 'Welcome back',
+        'intro' => 'Log in to continue.',
+        'headline' => 'Come back to more context.',
+        'copy' => 'Your matches, conversations and compatibility context are waiting where you left them.',
+        'noteKind' => 'yellow',
+        'noteTitle' => 'Less guessing. Better context.',
+        'noteCopy' => 'MTAM keeps personality and compatibility close to the dating decision.',
+    ])
+        @slot('topAction')
+            <a class="mtam-auth-top-action" href="{{ route('auth.register.show-form') }}">Sign up</a>
+        @endslot
 
-        <div class="form-card__header">
-            <h1>Bejelentkezes</h1>
-            <p>Admin vagy vasarloi fiok hasznalataval tudsz tovabblepni.</p>
-        </div>
+        <form method="POST" action="{{ route('auth.login') }}" class="mtam-auth-form">
+            @csrf
 
-        @include('shared.form-errors')
+            @include('auth.partials.field', [
+                'name' => 'email',
+                'label' => 'Email',
+                'type' => 'email',
+                'placeholder' => 'you@example.com',
+                'autocomplete' => 'email',
+                'autofocus' => true,
+            ])
 
-        <label for="email">Email</label>
-        <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus>
+            @include('auth.partials.field', [
+                'name' => 'password',
+                'label' => 'Password',
+                'type' => 'password',
+                'placeholder' => 'Enter your password',
+                'autocomplete' => 'current-password',
+            ])
 
-        <label for="password">Jelszo</label>
-        <input id="password" name="password" type="password" required>
+            <div class="mtam-auth-form__row">
+                <label class="mtam-auth-check">
+                    <input name="remember" type="checkbox" value="1" @checked(old('remember'))>
+                    <span>Remember me</span>
+                </label>
+                <a class="mtam-auth-text-action" href="{{ route('password.request') }}">Forgot password?</a>
+            </div>
 
-        <label class="checkbox-line">
-            <input name="remember" type="checkbox" value="1" @checked(old('remember'))>
-            Emlekezz ram
-        </label>
+            <button type="submit" class="mtam-auth-button mtam-auth-button--primary">Log in</button>
+        </form>
 
-        <button type="submit" class="button button--primary">Belepes</button>
-
-        <p class="form-card__footer">
-            Nincs meg fiokod?
-            <a href="{{ route('auth.register.show-form') }}">Regisztracio</a>
+        <p class="mtam-auth-switch">
+            New to MTAM?
+            <a href="{{ route('auth.register.show-form') }}">Sign up</a>
         </p>
-    </form>
+
+        <p class="mtam-auth-footnote">Account access states and recovery use calm, explicit messaging.</p>
+    @endcomponent
 @endsection

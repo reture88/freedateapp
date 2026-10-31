@@ -11,6 +11,7 @@ use App\Models\DatingProfile;
 use App\Models\Message;
 use App\Models\ProfilePhoto;
 use App\Models\User;
+use App\User\Enum\AccountStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -24,6 +25,7 @@ final class MatchListTest extends TestCase
         $user = User::query()->create([
             'name' => 'Match User',
             'email' => 'matches.no-profile@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,
@@ -46,6 +48,11 @@ final class MatchListTest extends TestCase
             'display_name' => 'Moderated Person',
             'moderation_status' => 'pending',
         ]);
+        $suspended = $this->createProfile('matches.suspended@example.com', ['display_name' => 'Suspended Match']);
+        $suspended->user->forceFill([
+            'account_status' => AccountStatus::SUSPENDED,
+            'is_active' => false,
+        ])->save();
 
         $matchedConnection = Connection::createBetween($viewer, $matched, [
             'profile_one_decision' => 'accepted',
@@ -77,6 +84,12 @@ final class MatchListTest extends TestCase
             'status' => 'matched',
             'matched_at' => '2026-07-19 12:30:00',
         ]);
+        Connection::createBetween($viewer, $suspended, [
+            'profile_one_decision' => 'accepted',
+            'profile_two_decision' => 'accepted',
+            'status' => 'matched',
+            'matched_at' => '2026-07-19 12:40:00',
+        ]);
 
         $this->actingAs($viewer->user)
             ->get('/matches')
@@ -88,7 +101,8 @@ final class MatchListTest extends TestCase
             ->assertDontSee('Pending Match')
             ->assertDontSee('Unmatched Person')
             ->assertDontSee('Blocked Person')
-            ->assertDontSee('Moderated Person');
+            ->assertDontSee('Moderated Person')
+            ->assertDontSee('Suspended Match');
     }
 
     public function test_empty_match_list_shows_empty_state(): void
@@ -171,10 +185,12 @@ final class MatchListTest extends TestCase
         $user = User::query()->create([
             'name' => $overrides['display_name'] ?? 'Match User',
             'email' => $email,
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,
             'is_active' => true,
+            'account_status' => AccountStatus::ACTIVE,
         ]);
 
         return DatingProfile::query()->create(array_merge([

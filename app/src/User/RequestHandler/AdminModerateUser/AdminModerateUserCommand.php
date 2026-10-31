@@ -33,7 +33,7 @@ final readonly class AdminModerateUserCommand implements CommandInterface, SelfC
         return [
             'actor_user_id' => 'required',
             'target_user_id' => 'required',
-            'action' => 'required|in:suspend,ban,restore',
+            'action' => 'required|in:suspend,ban,restore,deactivate',
         ];
     }
 }

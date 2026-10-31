@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\User\Enum\AccountStatus;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
@@ -18,8 +19,10 @@ class UserInfolist
                 TextEntry::make('role'),
                 IconEntry::make('is_admin')
                     ->boolean(),
-                IconEntry::make('is_active')
-                    ->boolean(),
+                TextEntry::make('account_status')
+                    ->label('Account status')
+                    ->badge()
+                    ->formatStateUsing(static fn (AccountStatus $state): string => $state->label()),
                 TextEntry::make('deletion_requested_at')
                     ->dateTime()
                     ->placeholder('-'),

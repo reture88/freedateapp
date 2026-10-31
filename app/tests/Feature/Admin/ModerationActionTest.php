@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\DatingProfile;
 use App\Models\Report;
 use App\Models\User;
+use App\User\Enum\AccountStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -66,14 +67,36 @@ final class ModerationActionTest extends TestCase
             ->post(sprintf('/admin/users/%d/moderation', $reportedUser->getKey()), ['action' => 'suspend'])
             ->assertRedirect(sprintf('/admin/users/%d', $reportedUser->getKey()));
         $reportedUser->refresh();
+        $this->assertSame(AccountStatus::SUSPENDED, $reportedUser->accountStatus());
+        $this->assertFalse($reportedUser->is_active);
+
+        $this->actingAs($admin)
+            ->post(sprintf('/admin/users/%d/moderation', $reportedUser->getKey()), ['action' => 'ban'])
+            ->assertRedirect(sprintf('/admin/users/%d', $reportedUser->getKey()));
+        $reportedUser->refresh();
+        $this->assertSame(AccountStatus::BANNED, $reportedUser->accountStatus());
+        $this->assertFalse($reportedUser->is_active);
+
+        $this->actingAs($admin)
+            ->post(sprintf('/admin/users/%d/moderation', $reportedUser->getKey()), ['action' => 'deactivate'])
+            ->assertRedirect(sprintf('/admin/users/%d', $reportedUser->getKey()));
+        $reportedUser->refresh();
+        $this->assertSame(AccountStatus::DEACTIVATED, $reportedUser->accountStatus());
         $this->assertFalse($reportedUser->is_active);
 
         $this->actingAs($admin)
             ->post(sprintf('/admin/users/%d/moderation', $reportedUser->getKey()), ['action' => 'restore'])
             ->assertRedirect(sprintf('/admin/users/%d', $reportedUser->getKey()));
         $reportedUser->refresh();
+        $this->assertSame(AccountStatus::ACTIVE, $reportedUser->accountStatus());
         $this->assertTrue($reportedUser->is_active);
-        $this->assertGreaterThanOrEqual(3, AuditLog::query()->count());
+        $this->assertGreaterThanOrEqual(5, AuditLog::query()->count());
+        $this->assertDatabaseHas('audit_logs', [
+            'actor_user_id' => $admin->getKey(),
+            'action' => 'ban',
+            'target_type' => 'user',
+            'target_id' => $reportedUser->getKey(),
+        ]);
     }
 
     public function test_non_admin_cannot_run_moderation_actions(): void
@@ -92,6 +115,49 @@ final class ModerationActionTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_admin_user_update_writes_account_status_and_audit_log(): void
+    {
+        $admin = $this->createUser('account-editor@example.com', true);
+        $target = $this->createUser('status-target@example.com');
+
+        $this->actingAs($admin)
+            ->post(sprintf('/admin/users/%d', $target->getKey()), [
+                'role' => 'customer',
+                'account_status' => AccountStatus::SUSPENDED->value,
+            ])
+            ->assertRedirect();
+
+        $target->refresh();
+        $this->assertSame(AccountStatus::SUSPENDED, $target->accountStatus());
+        $this->assertFalse($target->is_active);
+        $this->assertDatabaseHas('audit_logs', [
+            'actor_user_id' => $admin->getKey(),
+            'action' => 'update_user_account',
+            'target_type' => 'user',
+            'target_id' => $target->getKey(),
+        ]);
+    }
+
+    public function test_restoring_deletion_requested_user_clears_deletion_timestamp(): void
+    {
+        $admin = $this->createUser('restore-editor@example.com', true);
+        $target = $this->createUser('restore-target@example.com');
+        $target->forceFill([
+            'account_status' => AccountStatus::DELETION_REQUESTED,
+            'is_active' => false,
+            'deletion_requested_at' => '2026-07-19 12:00:00',
+        ])->save();
+
+        $this->actingAs($admin)
+            ->post(sprintf('/admin/users/%d/moderation', $target->getKey()), ['action' => 'restore'])
+            ->assertRedirect(sprintf('/admin/users/%d', $target->getKey()));
+
+        $target->refresh();
+        $this->assertSame(AccountStatus::ACTIVE, $target->accountStatus());
+        $this->assertTrue($target->is_active);
+        $this->assertNull($target->deletion_requested_at);
+    }
+
     private function createUser(string $email, bool $admin = false): User
     {
         return User::query()->create([
@@ -101,6 +167,7 @@ final class ModerationActionTest extends TestCase
             'role' => $admin ? 'admin' : 'customer',
             'is_admin' => $admin,
             'is_active' => true,
+            'account_status' => AccountStatus::ACTIVE,
         ]);
     }
 }

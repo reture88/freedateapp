@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http;
 
 use App\Http\Middleware\Authenticate;
+use App\Http\Middleware\EnsureAccountIsActive;
 use App\Http\Middleware\EnsureDatingProfileExists;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use App\Http\Middleware\EncryptCookies;
@@ -59,6 +60,7 @@ class Kernel extends HttpKernel
 
     protected $middlewareAliases = [
         'auth' => Authenticate::class,
+        'account.active' => EnsureAccountIsActive::class,
         'admin' => EnsureUserIsAdmin::class,
         'dating.profile' => EnsureDatingProfileExists::class,
         'auth.basic' => AuthenticateWithBasicAuth::class,

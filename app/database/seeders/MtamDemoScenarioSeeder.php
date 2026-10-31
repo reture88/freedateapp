@@ -13,6 +13,7 @@ use App\Models\ProfilePreference;
 use App\Models\ProfilePhoto;
 use App\Models\ProfileTag;
 use App\Models\User;
+use App\User\Enum\AccountStatus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
@@ -115,6 +116,8 @@ final class MtamDemoScenarioSeeder extends Seeder
                 'role' => 'customer',
                 'is_admin' => false,
                 'is_active' => true,
+                'account_status' => AccountStatus::ACTIVE,
+                'email_verified_at' => now(),
             ],
         );
 

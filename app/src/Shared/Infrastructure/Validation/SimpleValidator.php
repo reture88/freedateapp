@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Shared\Infrastructure\Validation;
 
+use App\Profile\Support\AdultEligibility;
 use Illuminate\Http\UploadedFile;
 
 final class SimpleValidator implements ValidatorInterface
@@ -127,14 +128,8 @@ final class SimpleValidator implements ValidatorInterface
                     }
                 }
 
-                $valueTimestamp = false;
-
-                if ('adult' === $rule && null !== $value && false !== ($valueTimestamp = strtotime((string) $value))) {
-                    $adultThreshold = strtotime('-18 years');
-
-                    if ($valueTimestamp > $adultThreshold) {
-                        $errors[$field][] = 'User must be at least 18 years old.';
-                    }
+                if ('adult' === $rule && null !== $value && !AdultEligibility::isEligible($value)) {
+                    $errors[$field][] = AdultEligibility::MESSAGE;
                 }
             }
         }

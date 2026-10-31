@@ -7,7 +7,7 @@
         <div>
             <p class="eyebrow">Admin</p>
             <h1>Felhasznalok</h1>
-            <p>Felhasznalok listazasa, szerepkor es aktiv allapot szerinti szurese.</p>
+            <p>Felhasznalok listazasa, szerepkor es fiokallapot szerinti szurese.</p>
         </div>
     </section>
 
@@ -25,11 +25,12 @@
             </select>
         </div>
         <div>
-            <label for="is_active">Aktivitas</label>
-            <select id="is_active" name="is_active">
+            <label for="account_status">Fiokallapot</label>
+            <select id="account_status" name="account_status">
                 <option value="">Osszes</option>
-                <option value="1" @selected(($filters['is_active'] ?? '') === '1')>Aktiv</option>
-                <option value="0" @selected(($filters['is_active'] ?? '') === '0')>Inaktiv</option>
+                @foreach ($accountStatuses as $status)
+                    <option value="{{ $status->value }}" @selected(($filters['account_status'] ?? '') === $status->value)>{{ $status->label() }}</option>
+                @endforeach
             </select>
         </div>
         <button type="submit" class="button button--primary button--inline">Szures</button>
@@ -42,7 +43,7 @@
                     <th>Nev</th>
                     <th>Email</th>
                     <th>Szerepkor</th>
-                    <th>Aktiv</th>
+                    <th>Fiokallapot</th>
                     <th></th>
                 </tr>
             </thead>
@@ -52,7 +53,7 @@
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->role }}</td>
-                        <td>{{ $user->is_active ? 'Igen' : 'Nem' }}</td>
+                        <td>{{ $user->accountStatus()->label() }}</td>
                         <td><a href="{{ route('admin.users.show', $user) }}">Reszletek</a></td>
                     </tr>
                 @empty

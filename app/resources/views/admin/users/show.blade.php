@@ -18,7 +18,7 @@
             <h2>Adatok</h2>
             <dl class="summary-list">
                 <div><dt>Cimek</dt><dd>{{ $user->addresses_count }}</dd></div>
-                <div><dt>Aktiv</dt><dd>{{ $user->is_active ? 'Igen' : 'Nem' }}</dd></div>
+                <div><dt>Fiokallapot</dt><dd>{{ $user->accountStatus()->label() }}</dd></div>
             </dl>
         </section>
 
@@ -32,10 +32,12 @@
                     <option value="admin" @selected($user->role === 'admin')>admin</option>
                 </select>
 
-                <label class="checkbox-line">
-                    <input type="checkbox" name="is_active" value="1" @checked($user->is_active)>
-                    Aktiv felhasznalo
-                </label>
+                <label for="account_status">Fiokallapot</label>
+                <select id="account_status" name="account_status">
+                    @foreach (\App\User\Enum\AccountStatus::cases() as $status)
+                        <option value="{{ $status->value }}" @selected($user->accountStatus() === $status)>{{ $status->label() }}</option>
+                    @endforeach
+                </select>
 
                 <button type="submit" class="button button--primary button--inline">Mentes</button>
             </form>
@@ -46,6 +48,22 @@
                 @include('components.confirm-button', [
                     'label' => 'Suspend',
                     'message' => 'Suspend this user account?',
+                ])
+            </form>
+            <form method="POST" action="{{ route('admin.users.moderation', $user) }}">
+                @csrf
+                <input type="hidden" name="action" value="ban">
+                @include('components.confirm-button', [
+                    'label' => 'Ban',
+                    'message' => 'Ban this user account?',
+                ])
+            </form>
+            <form method="POST" action="{{ route('admin.users.moderation', $user) }}">
+                @csrf
+                <input type="hidden" name="action" value="deactivate">
+                @include('components.confirm-button', [
+                    'label' => 'Deactivate',
+                    'message' => 'Deactivate this user account?',
                 ])
             </form>
             <form method="POST" action="{{ route('admin.users.moderation', $user) }}">

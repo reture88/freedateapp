@@ -15,6 +15,7 @@ use App\Models\Message;
 use App\Models\ProfilePhoto;
 use App\Models\ProfileTag;
 use App\Models\User;
+use App\User\Enum\AccountStatus;
 use Database\Seeders\ProfileTagTaxonomySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -61,6 +62,33 @@ final class ConversationTest extends TestCase
         $outsider = $this->createProfile('outsider@example.com');
 
         $this->actingAs($outsider->user)
+            ->get(sprintf('/conversations/%d', $conversation->getKey()))
+            ->assertForbidden();
+    }
+
+    public function test_restricted_accounts_cannot_open_existing_conversations(): void
+    {
+        [$first, $second, $conversation] = $this->createMatchedConversation();
+
+        $first->user->forceFill([
+            'account_status' => AccountStatus::SUSPENDED,
+            'is_active' => false,
+        ])->save();
+
+        $this->actingAs($first->user)
+            ->get(sprintf('/conversations/%d', $conversation->getKey()))
+            ->assertRedirect('/auth/account-unavailable');
+
+        $first->user->forceFill([
+            'account_status' => AccountStatus::ACTIVE,
+            'is_active' => true,
+        ])->save();
+        $second->user->forceFill([
+            'account_status' => AccountStatus::BANNED,
+            'is_active' => false,
+        ])->save();
+
+        $this->actingAs($first->user)
             ->get(sprintf('/conversations/%d', $conversation->getKey()))
             ->assertForbidden();
     }
@@ -304,10 +332,12 @@ final class ConversationTest extends TestCase
         $user = User::query()->create([
             'name' => $overrides['display_name'] ?? 'Chat User',
             'email' => $email,
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,
             'is_active' => true,
+            'account_status' => AccountStatus::ACTIVE,
         ]);
 
         return DatingProfile::query()->create(array_merge([

@@ -17,6 +17,7 @@ final class ProfileNavigationTest extends TestCase
         $user = User::query()->create([
             'name' => 'Navigation User',
             'email' => 'navigation@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

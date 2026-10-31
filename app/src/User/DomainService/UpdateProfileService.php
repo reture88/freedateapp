@@ -21,10 +21,17 @@ final readonly class UpdateProfileService
             throw EmailAlreadyTakenException::create($email);
         }
 
+        $emailChanged = $email->value() !== $user->email;
+
         $user->forceFill([
             'name' => $name->value(),
             'email' => $email->value(),
+            'email_verified_at' => $emailChanged ? null : $user->email_verified_at,
         ])->save();
+
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+        }
 
         return $user;
     }

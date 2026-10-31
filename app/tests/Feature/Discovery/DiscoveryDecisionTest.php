@@ -125,6 +125,7 @@ final class DiscoveryDecisionTest extends TestCase
         $user = User::query()->create([
             'name' => $overrides['display_name'] ?? 'Discovery User',
             'email' => $email,
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

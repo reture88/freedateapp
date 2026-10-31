@@ -5,13 +5,12 @@ namespace App\Filament\Resources\Users\Tables;
 use App\Models\User;
 use App\Shared\Dto\ValueObject\Context\SystemContext;
 use App\Shared\Infrastructure\Bus\Command\CommandBusInterface;
+use App\User\Enum\AccountStatus;
 use App\User\RequestHandler\AdminModerateUser\AdminModerateUserCommand;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class UsersTable
@@ -27,10 +26,13 @@ class UsersTable
                     ->searchable(),
                 TextColumn::make('role')
                     ->searchable(),
-                IconColumn::make('is_admin')
-                    ->boolean(),
-                IconColumn::make('is_active')
-                    ->boolean(),
+                TextColumn::make('is_admin')
+                    ->formatStateUsing(static fn (bool $state): string => $state ? 'Admin' : 'Customer'),
+                TextColumn::make('account_status')
+                    ->label('Account status')
+                    ->badge()
+                    ->formatStateUsing(static fn (AccountStatus $state): string => $state->label())
+                    ->sortable(),
                 TextColumn::make('deletion_requested_at')
                     ->dateTime()
                     ->sortable(),
@@ -49,18 +51,35 @@ class UsersTable
                         'customer' => 'Customer',
                         'admin' => 'Admin',
                     ]),
-                TernaryFilter::make('is_admin'),
-                TernaryFilter::make('is_active'),
+                SelectFilter::make('account_status')
+                    ->label('Account status')
+                    ->options(array_reduce(
+                        AccountStatus::cases(),
+                        static function (array $options, AccountStatus $status): array {
+                            $options[$status->value] = $status->label();
+
+                            return $options;
+                        },
+                        [],
+                    )),
             ])
             ->recordActions([
                 ViewAction::make(),
                 Action::make('suspend')
                     ->requiresConfirmation()
-                    ->visible(static fn (User $record): bool => $record->is_active && !$record->canAccessAdminPanel())
+                    ->visible(static fn (User $record): bool => $record->hasActiveAccount() && !$record->canAccessAdminPanel())
                     ->action(static fn (User $record): mixed => self::dispatchUserModerationAction($record, 'suspend')),
+                Action::make('ban')
+                    ->requiresConfirmation()
+                    ->visible(static fn (User $record): bool => AccountStatus::BANNED !== $record->accountStatus() && !$record->canAccessAdminPanel())
+                    ->action(static fn (User $record): mixed => self::dispatchUserModerationAction($record, 'ban')),
+                Action::make('deactivate')
+                    ->requiresConfirmation()
+                    ->visible(static fn (User $record): bool => AccountStatus::DEACTIVATED !== $record->accountStatus() && !$record->canAccessAdminPanel())
+                    ->action(static fn (User $record): mixed => self::dispatchUserModerationAction($record, 'deactivate')),
                 Action::make('restore')
                     ->requiresConfirmation()
-                    ->visible(static fn (User $record): bool => !$record->is_active)
+                    ->visible(static fn (User $record): bool => !$record->hasActiveAccount())
                     ->action(static fn (User $record): mixed => self::dispatchUserModerationAction($record, 'restore')),
             ])
             ->toolbarActions([]);

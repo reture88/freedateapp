@@ -9,7 +9,7 @@ use App\Safety\Presentation\Controller\Admin\AdminReportShowController;
 use App\Safety\Presentation\Controller\SubmitReportController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->group(static function (): void {
+Route::middleware(['auth', 'account.active', 'verified'])->group(static function (): void {
     Route::post('/reports', SubmitReportController::class)
         ->name('reports.submit');
     Route::post('/blocks', BlockUserController::class)

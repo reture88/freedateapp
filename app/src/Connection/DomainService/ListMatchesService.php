@@ -43,11 +43,11 @@ final class ListMatchesService
                 ? $connection->profileTwo
                 : $connection->profileOne;
 
-            if ('visible' !== $otherProfile->visibility_status || 'approved' !== $otherProfile->moderation_status) {
+            if ('visible' !== $otherProfile->visibility_status || 'approved' !== $otherProfile->moderation_status || !$otherProfile->hasAdultBirthdate()) {
                 continue;
             }
 
-            if (!$otherProfile->user->is_active || null !== $otherProfile->user->deletion_requested_at) {
+            if (!$otherProfile->user->hasActiveAccount() || !$otherProfile->user->hasVerifiedEmail()) {
                 continue;
             }
 

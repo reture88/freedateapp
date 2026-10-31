@@ -36,11 +36,11 @@ final class ShowConversationService
             ? $connection->profileTwo
             : $connection->profileOne;
 
-        if (!$viewerProfile->user->is_active || null !== $viewerProfile->user->deletion_requested_at) {
+        if (!$viewerProfile->user->hasActiveAccount() || !$viewerProfile->user->hasVerifiedEmail() || !$viewerProfile->hasAdultBirthdate()) {
             throw new \InvalidArgumentException('Conversation is not available.');
         }
 
-        if (!$otherProfile->user->is_active || null !== $otherProfile->user->deletion_requested_at) {
+        if (!$otherProfile->user->hasActiveAccount() || !$otherProfile->user->hasVerifiedEmail() || !$otherProfile->hasAdultBirthdate()) {
             throw new \InvalidArgumentException('Conversation is not available.');
         }
 

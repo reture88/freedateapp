@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\User\Enum\AccountStatus;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -24,6 +25,8 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
             'is_admin' => true,
             'is_active' => true,
+            'account_status' => AccountStatus::ACTIVE,
+            'email_verified_at' => now(),
         ])->save();
 
         User::query()->firstOrCreate(
@@ -34,6 +37,8 @@ class DatabaseSeeder extends Seeder
                 'role' => 'customer',
                 'is_admin' => false,
                 'is_active' => true,
+                'account_status' => AccountStatus::ACTIVE,
+                'email_verified_at' => now(),
             ],
         );
 

@@ -14,7 +14,7 @@ use App\User\Presentation\Controller\Admin\AdminUserShowController;
 use App\User\Presentation\Controller\Admin\AdminUserUpdateController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->group(static function (): void {
+Route::middleware(['auth', 'account.active', 'verified'])->group(static function (): void {
     Route::get('/profile', ProfileController::class)->name('profile.show');
     Route::post('/profile', UpdateProfileController::class)->name('profile.update');
     Route::post('/profile/password', ChangePasswordController::class)->name('profile.password.update');

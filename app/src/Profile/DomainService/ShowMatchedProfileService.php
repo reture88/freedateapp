@@ -17,6 +17,10 @@ final class ShowMatchedProfileService
         $profile = DatingProfile::query()->with(['photos', 'tags.category', 'user'])->findOrFail($query->profileId);
 
         if ((int) $viewerProfile->getKey() === (int) $profile->getKey()) {
+            if (!$viewerProfile->hasAdultBirthdate()) {
+                throw new \InvalidArgumentException('Profile is not available.');
+            }
+
             return $profile;
         }
 
@@ -37,7 +41,7 @@ final class ShowMatchedProfileService
             })
             ->exists();
 
-        if (!$isMatched || !$profile->user->is_active || null !== $profile->user->deletion_requested_at) {
+        if (!$viewerProfile->hasAdultBirthdate() || !$isMatched || !$profile->user->hasActiveAccount() || !$profile->user->hasVerifiedEmail() || !$profile->hasAdultBirthdate()) {
             throw new \InvalidArgumentException('Profile is not available.');
         }
 

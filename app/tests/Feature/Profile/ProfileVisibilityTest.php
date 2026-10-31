@@ -74,6 +74,7 @@ final class ProfileVisibilityTest extends TestCase
         $user = User::query()->create([
             'name' => 'Profile User',
             'email' => 'profile.visibility@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

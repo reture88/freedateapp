@@ -23,6 +23,7 @@ final class MessageListTest extends TestCase
         $user = User::query()->create([
             'name' => 'Messages User',
             'email' => 'messages.no-profile@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,
@@ -112,6 +113,7 @@ final class MessageListTest extends TestCase
         $user = User::query()->create([
             'name' => $overrides['display_name'] ?? 'Message User',
             'email' => $email,
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

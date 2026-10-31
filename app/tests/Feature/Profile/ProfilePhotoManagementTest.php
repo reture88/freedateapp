@@ -128,6 +128,7 @@ final class ProfilePhotoManagementTest extends TestCase
         $user = User::query()->create([
             'name' => 'Photo User',
             'email' => 'photo.user@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

@@ -255,6 +255,7 @@ final class PreferenceEditTest extends TestCase
         return User::query()->create([
             'name' => 'Preference User',
             'email' => $email,
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

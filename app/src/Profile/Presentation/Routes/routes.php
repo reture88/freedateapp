@@ -11,7 +11,7 @@ use App\Profile\Presentation\Controller\UpdateVisibilityController;
 use App\Profile\Presentation\Controller\UploadProfilePhotoController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware('auth')->group(static function (): void {
+Route::middleware(['auth', 'account.active', 'verified'])->group(static function (): void {
     Route::get('/dating-profile/onboarding', ShowOnboardingController::class)
         ->name('dating-profile.onboarding.show');
     Route::post('/dating-profile/onboarding', SaveOnboardingController::class)

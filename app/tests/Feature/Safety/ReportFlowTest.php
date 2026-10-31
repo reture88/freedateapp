@@ -106,6 +106,7 @@ final class ReportFlowTest extends TestCase
         $admin = User::query()->create([
             'name' => 'Admin User',
             'email' => 'report.admin@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'admin',
             'is_admin' => true,
@@ -114,6 +115,7 @@ final class ReportFlowTest extends TestCase
         $customer = User::query()->create([
             'name' => 'Customer User',
             'email' => 'report.customer@example.com',
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,
@@ -156,6 +158,7 @@ final class ReportFlowTest extends TestCase
         $user = User::query()->create([
             'name' => 'Report User',
             'email' => $email,
+            'email_verified_at' => now(),
             'password' => 'secret123',
             'role' => 'customer',
             'is_admin' => false,

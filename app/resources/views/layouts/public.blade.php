@@ -32,6 +32,8 @@
                     <a href="{{ route('auth.login.show-form') }}">Belepes</a>
                     <a href="{{ route('auth.register.show-form') }}">Regisztracio</a>
                 @endauth
+                <a href="{{ route('legal.terms') }}">Terms</a>
+                <a href="{{ route('legal.privacy') }}">Privacy</a>
             </nav>
         @endif
     </header>
