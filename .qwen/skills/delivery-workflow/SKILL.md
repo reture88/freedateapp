@@ -6,7 +6,9 @@ description: 'Use when starting or finishing a task: create/find a GitHub Issue,
 # Delivery Workflow (GitHub)
 
 Every feature or bug goes through a GitHub Issue, a feature branch, and a pull
-request. Do not commit code directly to `main`.
+request. Do not commit code directly to `main`. The **main session** runs the
+branch, commit, push, and PR steps; subagents return a commit proposal and
+never switch branches or commit.
 
 ## 1. Issue first
 
@@ -19,6 +21,9 @@ request. Do not commit code directly to `main`.
    - `[FEBE] - <Module> - <Short task>`
 4. Issue body is English and includes:
    - context and current behavior,
+   - **`Task type:`** `backend-bugfix | backend-feature | frontend-feature |
+     fullstack-feature | security-fix | docs-harness` (must match the
+     orchestration envelope),
    - expected behavior,
    - scope and constraints,
    - acceptance criteria,
@@ -30,6 +35,8 @@ request. Do not commit code directly to `main`.
 
 ## 2. Branch
 
+The main session runs these; subagents must not switch branches.
+
 1. `git checkout main`
 2. `git pull origin main`
 3. `git checkout -b <issue-number>-<kebab-slug>`
@@ -38,6 +45,9 @@ request. Do not commit code directly to `main`.
 4. If the Issue number cannot be resolved, stop and report it.
 
 ## 3. Commit
+
+The main session commits; implementation agents return the changed-file list,
+gate output, a proposed message, and the context attestation.
 
 Format:
 
@@ -59,11 +69,14 @@ Allowed `type` values: `added`, `changed`, `deprecated`, `removed`, `fixed`,
 
 ## 4. Before the pull request
 
+Implementation starts only after the `Awaiting architecture approval` stage is
+recorded; a light or harness plan still requires that gate.
+
 Run the definition of done:
 
 - `docker compose exec php composer test`
 - `docker compose exec php composer phpstan`
-- `docker compose exec php composer cs-check` (then `cs-fix` after green)
+- `docker compose exec php composer cs-check` (then `cs-fix` if it reports a diff)
 - `docker compose exec php php artisan route:list` for route changes
 - `git diff --check`
 - Figma + Playwright visual verification for UI changes
@@ -85,13 +98,16 @@ the testing section.
    - changes,
    - verification evidence (commands, results, screenshots),
    - remaining risks or gaps.
-6. Keep the branch up to date by merging `main` into it:
+6. For work that used the Qwen agent roles, attach the independent QA
+   acceptance report and, when triggered, the security review from
+   `docs/work/<issue>-<slug>/`.
+7. Keep the branch up to date by merging `main` into it:
    `git merge main`; resolve conflicts manually; never force push.
-7. Delete the branch after merge.
+8. Delete the branch after merge.
 
 ## 6. End of day
 
-- Commit and push the current branch.
+- The main session commits and pushes the current branch.
 - Use the same commit format.
 - If the work is not ready for a pull request, say so; do not open a draft PR
   without the user's approval.

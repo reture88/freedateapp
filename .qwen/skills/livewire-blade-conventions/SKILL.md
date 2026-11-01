@@ -71,7 +71,9 @@ For any UI change, follow `figma-playwright-verification`:
    widths.
 4. Compare and fix. Attach evidence to the pull request.
 
-If the design is ambiguous, ask before inventing a new layout.
+If the design is ambiguous, record the question under `Outstanding questions`
+and return `blocked`/`awaiting_approval` before inventing a new layout; a
+subagent cannot ask the user directly.
 
 ## Related
 

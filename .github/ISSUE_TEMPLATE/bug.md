@@ -6,6 +6,11 @@ labels: ""
 assignees: ""
 ---
 
+## Task type
+
+Task type: <!-- Required: one of backend-bugfix, backend-feature, frontend-feature,
+fullstack-feature, security-fix, docs-harness. -->
+
 ## Steps to reproduce
 
 1. <!-- step 1 -->
