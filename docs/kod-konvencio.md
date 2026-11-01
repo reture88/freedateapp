@@ -1,7 +1,7 @@
 # Code Convention
 
 This is the short reference. The detailed, task-specific rules live in
-`.claude/skills/`.
+`.qwen/skills/`.
 
 ## PHP
 
@@ -70,4 +70,11 @@ This is the short reference. The detailed, task-specific rules live in
 - Pull request: link the Issue with `Closes #<issue>` and use
   `.github/pull_request_template.md`.
 
-See `.claude/skills/delivery-workflow/SKILL.md` for the full flow.
+See `.qwen/skills/delivery-workflow/SKILL.md` for the full flow.
+
+## Agent Workflow
+
+Work that uses the Qwen Code agent roles also follows
+`docs/agent-workflow/state-machine.md`, `docs/agent-workflow/approval-policy.md`,
+and `docs/agent-workflow/context-loading.md`. An implementing agent does not
+approve its own work; QA verifies the evidence.

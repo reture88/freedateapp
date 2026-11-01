@@ -7,6 +7,8 @@ description: 'Checklist to run before declaring PHP/Laravel backend work in this
 
 Adapted from the reference implementation's `.windsurf/workflows/dod.md`. Everything below runs inside the `php` container (`docker compose exec php ...`) — there is no local PHP.
 
+This is the technical quality standard, not an approval. A green run is input to an independent QA verification (`.qwen/agents/qa-engineer.md`), and the implementing agent never signs off its own work.
+
 ## Run every time before calling backend work done
 
 1. **Static analysis**

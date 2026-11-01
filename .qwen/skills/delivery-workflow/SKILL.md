@@ -85,9 +85,12 @@ the testing section.
    - changes,
    - verification evidence (commands, results, screenshots),
    - remaining risks or gaps.
-6. Keep the branch up to date by merging `main` into it:
+6. For work that used the Qwen agent roles, attach the independent QA
+   acceptance report and, when triggered, the security review from
+   `docs/work/<issue>-<slug>/`.
+7. Keep the branch up to date by merging `main` into it:
    `git merge main`; resolve conflicts manually; never force push.
-7. Delete the branch after merge.
+8. Delete the branch after merge.
 
 ## 6. End of day
 

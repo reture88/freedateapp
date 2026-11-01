@@ -18,6 +18,7 @@ Closes #<!-- issue number -->
 - [ ] `docker compose exec php php artisan route:list` (if routes changed)
 - [ ] `git diff --check`
 - [ ] Figma + Playwright visual check (if UI changed)
+- [ ] Independent QA acceptance report (if the agent workflow was used)
 
 ### Evidence
 
@@ -37,3 +38,5 @@ Closes #<!-- issue number -->
 - [ ] The commit has a `Changelog:` trailer.
 - [ ] The change follows `docs/kod-konvencio.md` and the relevant skills.
 - [ ] The affected domain `docs/context.md` is updated if behavior changed.
+- [ ] Security review is recorded if auth, visibility, location, reporting, or
+      moderation changed.

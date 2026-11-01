@@ -15,20 +15,30 @@ UI: Blade + Livewire 3 + Filament 4 with plain CSS
 
 ## Harness Layout (canonical)
 
+Qwen Code is the only agent runtime. The harness is Qwen-native:
+
 - Entry point: this file.
-- Rules and skills: `.claude/skills/*/SKILL.md`.
-- Workflows: `.claude/skills/planning/SKILL.md`,
-  `.claude/skills/delivery-workflow/SKILL.md`.
+- Runtime: Qwen Code 0.26.4.
+- Skills: `.qwen/skills/*/SKILL.md`.
+- Subagents: `.qwen/agents/*.md`.
+- Conditional context rules: `.qwen/rules/*.md`.
+- Workflow policy: `docs/agent-workflow/` (state machine, approval, context
+  loading, concurrency, artifact contracts, templates).
 - Domain context: `app/src/<Module>/AGENTS.md` +
   `app/src/<Module>/docs/context.md`.
 - References: `docs/architektura.md`, `docs/kod-konvencio.md`.
-- Visual verification:
-  `.claude/skills/figma-playwright-verification/SKILL.md`.
+- Visual verification: `.qwen/skills/figma-playwright-verification/SKILL.md`.
 - GitHub: Issues, branches, pull requests (see Delivery Workflow).
+- MCP and permissions: `.qwen/settings.json`.
 
-Do not create a parallel `.windsurf/` rule tree. `.claude/skills` is the single
-source of truth. If Codex or another harness needs the same content, point it
-here or generate from here.
+`.qwen/skills` is the single source of truth for standing rules. Do not
+duplicate the same rule in `.claude/`, `.codex/`, `.windsurf/`, or another
+harness tree. If another tool needs the content, point it here. Claude Code and
+Codex are not part of the runtime; historical references to them may remain
+only where they explain the origin of a rule.
+
+If a referenced file is missing, report it; do not silently substitute a new
+process.
 
 ## Execution Policy
 
@@ -36,9 +46,35 @@ here or generate from here.
   before proposing or executing steps.
 - If several rules apply, the more specific one wins:
   domain `AGENTS.md` > project skill > this file > generic defaults.
+- `.qwen/rules/*.md` activate automatically when a tool touches a matching
+  path. They are pointers to the authoritative skill or document, not a
+  duplicate of it.
 - Do not invent process rules when a matching skill exists.
-- If a referenced file is missing, report it; do not silently substitute a
-  new process.
+- Follow `docs/agent-workflow/state-machine.md` only for work that uses the
+  agent roles. A direct, small change still follows the delivery workflow.
+
+## Agent Roles and Orchestration
+
+The harness separates implementation from verification and approval. The roles
+are defined in `.qwen/agents/`:
+
+| Role | Delivers | Must not do |
+| --- | --- | --- |
+| `orchestrator` | Stage selection, delegation, evidence evaluation | Implement application code or approve a gate |
+| `product-validator` | `feature-spec.md` | Approve its own proposal or choose architecture |
+| `architecture-reviewer` | `technical-plan.md` | Change approved scope or implement |
+| `backend-engineer` | Laravel backend code, tests, domain context | Edit UI outside its scope or approve its own work |
+| `frontend-engineer` | Blade/Livewire/Filament/CSS, screenshots | Invent a design system or approve its own work |
+| `qa-engineer` | `acceptance-report.md` | Implement the feature it reviews or trust claims |
+| `security-reviewer` | `security-review.md` | Implement fixes or review its own work |
+
+The main Qwen session is the human-facing entry point and the only agent that
+can ask the user. Named subagents return `awaiting_approval`; the main session
+records the human decision.
+
+Read `docs/agent-workflow/orchestration.md` for the task envelope and the
+delegation contract. Read `docs/agent-workflow/approval-policy.md` before any
+action that leaves the repository.
 
 ## Interaction Policy
 
@@ -49,6 +85,9 @@ here or generate from here.
   "csináld", "kezdd el").
 - Before a command with side effects outside the repo (push, pull request,
   issue creation, delete), explain it and follow the active approval mode.
+- Creating or editing an Issue, opening or editing a pull request, merging,
+  and deleting a branch with unmerged work require explicit human approval
+  after the draft exists.
 - After implementation, report verification evidence: commands run, results,
   and anything not verified.
 
@@ -65,12 +104,13 @@ when behavior, responsibilities, service contracts, permissions, integration
 boundaries, or capability handling change. A pure internal refactor does not
 require an update, but a behavior change does.
 
-If multiple domains are affected, load and maintain all of them.
+If multiple domains are affected, load and maintain all of them. Do not load
+unrelated domain contexts; see `docs/agent-workflow/context-loading.md`.
 
 ## Delivery Workflow (GitHub)
 
 Every feature or bug starts with a GitHub Issue. Use
-`.claude/skills/delivery-workflow/SKILL.md` for the full flow.
+`.qwen/skills/delivery-workflow/SKILL.md` for the full flow.
 
 - Branch from up-to-date `main`: `<issue-number>-<kebab-slug>`
   (for example `42-add-account-lifecycle`). No `feature/`, `bugfix/`,
@@ -99,8 +139,12 @@ Run inside the `php` container:
 - `git diff --check`
 
 For UI changes, also use the Figma + Playwright MCP flow from
-`.claude/skills/figma-playwright-verification/SKILL.md`. Static checks do not
+`.qwen/skills/figma-playwright-verification/SKILL.md`. Static checks do not
 prove a visual match.
+
+For work that uses the agent roles, QA verifies the evidence independently and
+security review is mandatory for auth, profile visibility, location, reporting,
+blocking, moderation, and sensitive-data changes.
 
 ## Build, Test, and Development Commands
 
@@ -119,7 +163,7 @@ example `LoginCommand`, `LoginCommandHandler`, and `LoginCommandResponse`.
 
 Prefer value objects for meaningful domain scalars. Use the bus for module use
 cases; controllers do not call repositories directly. See
-`.claude/skills/laravel-cqrs-conventions/SKILL.md` and
+`.qwen/skills/laravel-cqrs-conventions/SKILL.md` and
 `docs/kod-konvencio.md`.
 
 ## Testing Guidelines
@@ -128,19 +172,24 @@ Add or update tests with behavioral changes. Use feature tests for HTTP and
 Livewire flows and unit tests for isolated services/value objects. Name tests
 after the behavior under test, such as `AuthenticationFlowTest.php`.
 
+An implementation agent does not approve its own tests. QA inspects the tests,
+runs the gates, and maps each acceptance criterion to evidence.
+
 ## Language
 
 - Repo artifacts (code, comments, docs, issues, pull requests, commits) are in
   English.
 - Stakeholder-facing summaries and release notes are in Hungarian; use
-  `.claude/skills/technical-writer/SKILL.md`.
+  `.qwen/skills/technical-writer/SKILL.md`.
 
 ## Agent-Specific Notes
 
-- Project skills live under `.claude/skills`: Laravel/CQRS, definition of
-  done, Livewire/Blade, Figma/Playwright verification, delivery workflow,
-  planning, and technical writer.
-- `.qwen/settings.json` enables the Figma and Playwright MCP servers and
-  auto-approves `docker compose`, `git`, and `gh` commands. Do not add secrets
-  there; tokens belong in the environment.
+- Qwen Code discovers project skills in `.qwen/skills`, project subagents in
+  `.qwen/agents`, and conditional rules in `.qwen/rules`. It does not read
+  `.claude/skills`.
+- `.qwen/settings.json` keeps the Figma and Playwright MCP servers. It
+  auto-approves read-only inspection, local commits, and the quality gates;
+  push, Issue/PR changes, merge, migrations, and `compose down` require
+  approval; force pushes are denied. Do not add secrets there; tokens belong in
+  the environment.
 - Do not recreate unrelated external agent-framework assets.
