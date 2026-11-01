@@ -6,6 +6,7 @@ Issue: #<issue> <url>
 Branch / commit: <branch> @ <sha>
 Author: security-reviewer
 Date: <YYYY-MM-DD>
+Status: pending | in_progress | blocked | awaiting_approval | completed | failed | rejected
 Verdict: pass | pass with findings | fail
 ```
 
@@ -54,6 +55,25 @@ release), `minor` (defense in depth or follow-up).
 ## Residual risk
 
 - <risk accepted with a reason, or "none">
+
+## Context attestation
+
+```text
+Required context:
+Files inspected:
+Missing context:
+Context status: complete | partial | blocked
+```
+
+## Approval
+
+```text
+Approved by:
+Date:
+Scope:
+Conditions:
+Evidence:
+```
 
 ## Verdict
 

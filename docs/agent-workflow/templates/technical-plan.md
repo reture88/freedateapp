@@ -5,8 +5,9 @@ Task ID: <issue>-architecture-<n>
 Issue: #<issue> <url>
 Author: architecture-reviewer
 Date: <YYYY-MM-DD>
-Status: draft | awaiting_approval | approved
+Status: pending | in_progress | blocked | awaiting_approval | completed | failed | rejected
 Feature spec: docs/work/<issue>-<slug>/feature-spec.md
+Light plan: yes | no
 ```
 
 ## Current state
@@ -84,12 +85,23 @@ Feature spec: docs/work/<issue>-<slug>/feature-spec.md
 
 ## Verification plan
 
+Commands for the implementation and QA; this reviewer is read-only.
+
 - `docker compose exec php composer test`
 - `docker compose exec php composer phpstan`
 - `docker compose exec php composer cs-check`
 - `docker compose exec php php artisan route:list` (if routes changed)
 - `git diff --check`
 - Visual: <Figma frame and Playwright screenshots, or "not applicable">
+
+## Context attestation
+
+```text
+Required context:
+Files inspected:
+Missing context:
+Context status: complete | partial | blocked
+```
 
 ## Open questions
 

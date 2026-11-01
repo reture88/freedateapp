@@ -34,13 +34,19 @@ on 2026-11-01 and no duplicate rule tree is kept.
 
 | Agent | Purpose | Writes |
 | --- | --- | --- |
-| `orchestrator` | Selects the next valid stage, delegates, verifies, escalates | Task artifacts only |
-| `product-validator` | Product scope, duplicate check, feature spec | `docs/work/**/feature-spec.md` |
-| `architecture-reviewer` | Domain boundaries, data/contract impact, technical plan | `docs/work/**/technical-plan.md` |
+| `orchestrator` | Selects the next valid stage, delegates, verifies, escalates | Task artifacts; `AGENTS.md`, `docs/harness.md`, `docs/agent-workflow/**` for `docs-harness` |
+| `product-validator` | Product scope, duplicate check, feature spec | Read-only; returns spec text |
+| `architecture-reviewer` | Domain boundaries, data/contract impact, technical plan | Read-only; returns plan text |
 | `backend-engineer` | Laravel CQRS implementation, tests, domain context | `app/src`, `app/tests`, backend glue |
 | `frontend-engineer` | Blade, Livewire, Filament, CSS, visual evidence | views, Livewire, Filament, CSS |
-| `qa-engineer` | Independent acceptance verification | `docs/work/**/acceptance-report.md` |
-| `security-reviewer` | Auth, authorization, privacy, reporting/blocking review | `docs/work/**/security-review.md` |
+| `qa-engineer` | Independent acceptance verification | Read-only; returns report text |
+| `security-reviewer` | Auth, authorization, privacy, reporting/blocking review | Read-only; returns review text |
+
+The **main session** is the only commit owner and the only writer of
+`.qwen/settings.json`, `.qwen/agents/**`, `.qwen/skills/**`, and
+`.qwen/rules/**`. `Edit(./.qwen/**)` is an `ask` permission. There is no
+unrestricted harness-writer role; see
+`docs/agent-workflow/concurrency-policy.md`.
 
 The contract and the conditional paths are in
 `docs/agent-workflow/orchestration.md` and
@@ -85,19 +91,26 @@ Every role reads a fixed context set; the matrix is in
 - only the affected module `AGENTS.md` and `docs/context.md`;
 - the skill that matches the work, not every skill.
 
+Every result carries `Required context`, `Files inspected`, `Missing context`,
+and `Context status`. A role may return `completed` only with
+`Context status: complete`; QA and the orchestrator reject a result missing the
+attestation. This is a reviewable contract, not a filesystem sandbox.
+
 `.qwen/rules/backend.md`, `.qwen/rules/frontend.md`, and
 `.qwen/rules/harness.md` activate when a tool touches a matching path. They
 point at the skill or document; they do not duplicate it.
 
 ## Approval Gates
 
-Human approval is required for product scope, architecture, Figma direction,
-Issue creation/modification, pull request creation/modification, merge, and
-production deployment. Agents may draft the artifact and prepare the exact
-command. See `docs/agent-workflow/approval-policy.md`.
+Human approval is required for product scope, architecture (including light and
+harness plans), Figma direction, Issue creation/modification, commit, pull
+request creation/modification, merge, and production deployment. Agents may
+draft the artifact and prepare the exact command. See
+`docs/agent-workflow/approval-policy.md`.
 
-Named subagents cannot ask the user directly. They return
-`awaiting_approval`; the main Qwen session asks and records the answer.
+The main session is the only commit owner. Named subagents cannot ask the user
+directly; they return `awaiting_approval` or a commit proposal, and the main
+session asks and records the answer.
 
 ## Artifacts
 
@@ -109,22 +122,30 @@ Templates live in `docs/agent-workflow/templates/`:
 - `security-review.md`
 - `design-review.md`
 
-Durable artifacts are stored under `docs/work/<issue>-<slug>/`. Do not create
-one for a trivial change; record "artifact not required" in the agent result.
+Durable artifacts are stored under `docs/work/<issue>-<slug>/`. The
+orchestrator writes them; the author returns the full text in its result. Do
+not create one for a trivial change; record "artifact not required" in the
+agent result.
 
 ## Using Figma and Playwright
 
-- Figma MCP is the design source of truth.
-- Playwright MCP is the visual verification tool.
+- Figma MCP is the design source of truth, but the Figma subscription is
+  currently expired; agents must report the blocker instead of inventing a
+  frame.
+- Playwright MCP is the visual verification tool. The server exposes the
+  browser tools; install Chrome (`npx playwright install chrome`) before using
+  them.
 - The flow is MCP-based; the repo intentionally has no `package.json`,
   Playwright config, or Node E2E suite.
 - See `.qwen/skills/figma-playwright-verification/SKILL.md`.
 
 ## GitHub Flow
 
-- Every feature or bug has an Issue.
+- Every feature or bug has an Issue with a `Task type:` field.
 - Branch from `main`: `<issue-number>-<slug>`.
-- Commit with a `Changelog:` trailer.
+- Record `Awaiting architecture approval` before implementation.
+- The main session commits with a `Changelog:` trailer; subagents return a
+  commit proposal.
 - Open a PR, link the Issue, attach test and visual evidence.
 - Merge `main` into the branch to sync; do not force push.
 
@@ -133,17 +154,39 @@ one for a trivial change; record "artifact not required" in the agent result.
 `.qwen/settings.json` defines:
 
 - `figma` MCP server (`https://mcp.figma.com/mcp`, streamable HTTP).
-- `playwright` MCP server (`npx @playwright/mcp@latest`).
-- `permissions.allow`: read-only git/gh inspection, local commits, compose
-  status/logs/up, the quality-gate commands, agent delegation, and the
-  Figma/Playwright MCP tools.
-- `permissions.ask`: push, merge, rebase/reset/stash, branch deletion,
-  Issue/PR create/edit/comment/merge, compose down/restart, migrations, and
-  seeding.
-- `permissions.deny`: force-push patterns and reads of `.env` / `app/.env`.
+- `playwright` MCP server (`npx @playwright/mcp@0.0.84`).
+- `permissions.allow`: read-only git/gh inspection, compose status/logs/up,
+  the quality-gate commands (`composer test`, `phpstan`, `cs-check`,
+  `route:list`, `artisan test`), agent delegation, and the Figma/Playwright
+  MCP tools.
+- `permissions.ask`: `composer cs-fix`, `git add`, `git commit`, branch
+  switching, push, merge, rebase/reset/stash, branch deletion,
+  `Edit(./.qwen/**)`, Issue/PR create/edit/comment/merge, compose
+  down/restart, migrations, and seeding.
+- `permissions.deny`: force-push variants (including `+refspec`, `--mirror`,
+  `-f`, `-uf`, `-fu`, and `git -C`/`--git-dir` forms), reads of `.env`
+  variants through `Read` and shell, file redirects (`>`, `tee`, `sed -i`),
+  and `mcp__playwright__browser_run_code_unsafe`.
+- Permission precedence is `deny > ask > allow`; compound shell commands are
+  split and evaluated per subcommand with the most restrictive result
+  (verified in the installed 0.26.4 build). `ask` is a confirmation prompt,
+  not a hard block; `deny` is the only hard rule. A `-y`/yolo run
+  auto-approves `ask` rules, so the prompt guard depends on the approval
+  mode.
+- `Edit(./.qwen/**)` is Qwen's Edit meta-category; it covers `edit`,
+  `write_file`, and `notebook_edit`. Arbitrary shell redirects are separately
+  denied (`Bash(*>*)`, `*tee *`, `*sed -i*`), so the main session remains the
+  configuration writer; this is still a rule layer, not a filesystem sandbox.
+- Both MCP servers use `trust: true`. Figma is currently unavailable because
+  its subscription expired. Playwright is configured and exposes its browser
+  tools; its browser requires a Chrome distribution (`npx playwright install
+  chrome`). The 2026-11-01 audit listed the 25 Playwright tools but a browser
+  call failed until Chrome was installed. Playwright is pinned to
+  `@playwright/mcp@0.0.84`; review the version when upgrading.
 
 Permission rules are the enforced boundary. A subagent's tool allowlist is a
-second boundary. Neither replaces the approval gates.
+second boundary. Neither replaces the approval gates. `Agent` allow rules are
+stripped in Auto Mode, so delegation approval there is classifier-driven.
 
 Do not commit tokens. Use environment variables or the global MCP
 configuration for authentication.
@@ -167,17 +210,46 @@ Known limits:
 
 - Top-level named subagents do not receive `ask_user_question`; approvals
   must return to the main session.
+- Context loading is enforced by the result attestation and QA review, not by a
+  filesystem sandbox. An agent can still read an unlisted file.
+- Reviewer write boundaries are enforceable only by tool removal: product,
+  architecture, QA, and security have no `write_file`; QA also blocks `edit`
+  and `run_shell_command` and has no Playwright tools. Security and
+  architecture run in `plan` mode. QA inspects gate evidence and screenshots;
+  the frontend role captures the screenshots and the main session runs the
+  gates.
 - Forks share the parent's working directory and have no worktree isolation;
   do not use them for parallel writes.
 - A subagent's write scope is an instruction, not a filesystem sandbox. The
-  frontend and QA roles inherit the tool set so the Figma and Playwright MCP
-  tools are available; their boundaries are the task envelope, the QA
-  blocklist on `edit`, and the review evidence.
+  orchestrator and frontend role hold write tools; their boundaries are the
+  task envelope, the harness ownership table, and review evidence. The
+  frontend role inherits the tool set so the Figma and Playwright MCP tools
+  are available.
 - Nested agents run in the foreground; a nested background launch is rejected.
 - Worktree changes must be reviewed and integrated manually; Qwen Code does
   not merge them.
 - There is no automatic stage engine. The state machine is enforced by the
   orchestrator prompt, the artifacts, and the human gates, not by code.
+- `git add`/`git commit` are `ask` permissions globally, not per-agent. The
+  main-session-only commit rule is enforced by the prompt plus the permission
+  prompt; specialists can still attempt a commit and will need approval.
+  `git checkout`, `git switch`, `git restore`, `git cherry-pick`, and
+  `git worktree` are also `ask`.
+
+## Harness Validation
+
+Run the static validator after changing agents, skills, rules, workflow docs,
+or settings:
+
+```bash
+python3 docs/agent-workflow/validate-harness.py
+python3 -m json.tool .qwen/settings.json >/dev/null
+git diff --check
+```
+
+The validator checks frontmatter, result-contract fields, JSON, and referenced
+paths. It does not execute agents; runtime discovery is a separate check with
+`qwen --approval-mode plan`.
 
 ## Adding a Domain Context
 

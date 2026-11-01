@@ -6,6 +6,7 @@ Issue: #<issue> <url>
 Branch / commit: <branch> @ <sha>
 Author: qa-engineer
 Date: <YYYY-MM-DD>
+Status: pending | in_progress | blocked | awaiting_approval | completed | failed | rejected
 Verdict: pass | fail | partial
 ```
 
@@ -14,6 +15,15 @@ Verdict: pass | fail | partial
 - Feature spec: `docs/work/<issue>-<slug>/feature-spec.md`
 - Technical plan: `docs/work/<issue>-<slug>/technical-plan.md`
 - Diff reviewed: `<base>..<head>`
+
+## Context compliance
+
+| Check | Result | Evidence |
+| --- | --- | --- |
+| Implementation `Context status: complete` | pass / fail | <result field or file> |
+| `Required context` and `Files inspected` present | pass / fail | <result field> |
+| `Missing context` is `none` | pass / fail | <result field> |
+| Orchestrator result has every mandatory envelope field | pass / fail | <result field> |
 
 ## Acceptance criteria
 

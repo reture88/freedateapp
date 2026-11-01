@@ -19,6 +19,7 @@ Qwen Code is the only agent runtime. The harness is Qwen-native:
 
 - Entry point: this file.
 - Runtime: Qwen Code 0.26.4.
+- Harness guide: `docs/harness.md`.
 - Skills: `.qwen/skills/*/SKILL.md`.
 - Subagents: `.qwen/agents/*.md`.
 - Conditional context rules: `.qwen/rules/*.md`.
@@ -36,6 +37,12 @@ duplicate the same rule in `.claude/`, `.codex/`, `.windsurf/`, or another
 harness tree. If another tool needs the content, point it here. Claude Code and
 Codex are not part of the runtime; historical references to them may remain
 only where they explain the origin of a rule.
+
+Harness ownership is explicit: the main session writes `.qwen/settings.json`,
+`.qwen/agents/**`, `.qwen/skills/**`, and `.qwen/rules/**`; the orchestrator
+writes `AGENTS.md`, `docs/harness.md`, and `docs/agent-workflow/**` only for a
+`docs-harness` task. Reviewers are read-only. See
+`docs/agent-workflow/concurrency-policy.md`.
 
 If a referenced file is missing, report it; do not silently substitute a new
 process.
@@ -60,17 +67,18 @@ are defined in `.qwen/agents/`:
 
 | Role | Delivers | Must not do |
 | --- | --- | --- |
-| `orchestrator` | Stage selection, delegation, evidence evaluation | Implement application code or approve a gate |
-| `product-validator` | `feature-spec.md` | Approve its own proposal or choose architecture |
-| `architecture-reviewer` | `technical-plan.md` | Change approved scope or implement |
+| `orchestrator` | Stage selection, delegation, evidence evaluation, task artifacts, `docs-harness` docs | Edit application code, `.qwen/**` configuration, or approve a gate |
+| `product-validator` | Feature spec content (read-only) | Approve its own proposal or choose architecture |
+| `architecture-reviewer` | Technical plan content (read-only) | Change approved scope or implement |
 | `backend-engineer` | Laravel backend code, tests, domain context | Edit UI outside its scope or approve its own work |
 | `frontend-engineer` | Blade/Livewire/Filament/CSS, screenshots | Invent a design system or approve its own work |
-| `qa-engineer` | `acceptance-report.md` | Implement the feature it reviews or trust claims |
-| `security-reviewer` | `security-review.md` | Implement fixes or review its own work |
+| `qa-engineer` | Acceptance report content (read-only on code) | Implement the feature it reviews or trust claims |
+| `security-reviewer` | Security review content (read-only) | Implement fixes or review its own work |
 
 The main Qwen session is the human-facing entry point and the only agent that
-can ask the user. Named subagents return `awaiting_approval`; the main session
-records the human decision.
+can ask the user. It is also the only commit owner. Named subagents return
+`awaiting_approval` or a commit proposal; the main session records the human
+decision and runs `git add`/`git commit`/`git push`.
 
 Read `docs/agent-workflow/orchestration.md` for the task envelope and the
 delegation contract. Read `docs/agent-workflow/approval-policy.md` before any
@@ -112,10 +120,16 @@ unrelated domain contexts; see `docs/agent-workflow/context-loading.md`.
 Every feature or bug starts with a GitHub Issue. Use
 `.qwen/skills/delivery-workflow/SKILL.md` for the full flow.
 
+- Record a `Task type:` in the Issue body: `backend-bugfix`,
+  `backend-feature`, `frontend-feature`, `fullstack-feature`, `security-fix`,
+  or `docs-harness`. The orchestrator returns `blocked` when it is missing.
 - Branch from up-to-date `main`: `<issue-number>-<kebab-slug>`
   (for example `42-add-account-lifecycle`). No `feature/`, `bugfix/`,
   `hotfix/`, or `codex/` prefixes.
-- Never commit code directly to `main`.
+- Never commit code directly to `main`. The main session is the only commit
+  owner; subagents return a commit proposal.
+- Implementation starts only after `Awaiting architecture approval` is
+  recorded, including for light and harness plans.
 - Commit message: short imperative English subject, optional body, blank line,
   then `Changelog: <type>` where type is one of `added`, `changed`,
   `deprecated`, `removed`, `fixed`, `security`.
@@ -134,7 +148,7 @@ Run inside the `php` container:
 - `docker compose exec php composer test`
 - `docker compose exec php composer phpstan`
 - `docker compose exec php composer cs-check`
-  (then `composer cs-fix` after green)
+  (then `composer cs-fix` if it reports a diff)
 - `docker compose exec php php artisan route:list` for route changes
 - `git diff --check`
 
@@ -144,7 +158,14 @@ prove a visual match.
 
 For work that uses the agent roles, QA verifies the evidence independently and
 security review is mandatory for auth, profile visibility, location, reporting,
-blocking, moderation, and sensitive-data changes.
+blocking, moderation, sensitive-data changes, and `.qwen/settings.json`, MCP
+servers, or agent tool permissions. QA rejects an implementation result whose
+`Context status` is not `complete` or whose `Required context` /
+`Files inspected` / `Missing context` fields are absent.
+
+Changing `.qwen/settings.json`, agent definitions, skills, or rules also
+requires the harness validation: JSON parse, referenced-path check, static
+harness validator, and `git diff --check`.
 
 ## Build, Test, and Development Commands
 
@@ -173,14 +194,16 @@ Livewire flows and unit tests for isolated services/value objects. Name tests
 after the behavior under test, such as `AuthenticationFlowTest.php`.
 
 An implementation agent does not approve its own tests. QA inspects the tests,
-runs the gates, and maps each acceptance criterion to evidence.
+the gate evidence, and maps each acceptance criterion to evidence. The main
+session runs the gates; QA has no shell.
 
 ## Language
 
 - Repo artifacts (code, comments, docs, issues, pull requests, commits) are in
   English.
-- Stakeholder-facing summaries and release notes are in Hungarian; use
-  `.qwen/skills/technical-writer/SKILL.md`.
+- Stakeholder-facing summaries and release notes are in Hungarian; the main
+  session invokes `.qwen/skills/technical-writer/SKILL.md` for them. No
+  subagent owns that skill.
 
 ## Agent-Specific Notes
 
@@ -188,8 +211,10 @@ runs the gates, and maps each acceptance criterion to evidence.
   `.qwen/agents`, and conditional rules in `.qwen/rules`. It does not read
   `.claude/skills`.
 - `.qwen/settings.json` keeps the Figma and Playwright MCP servers. It
-  auto-approves read-only inspection, local commits, and the quality gates;
-  push, Issue/PR changes, merge, migrations, and `compose down` require
-  approval; force pushes are denied. Do not add secrets there; tokens belong in
-  the environment.
+  auto-approves read-only inspection and the quality gates; `git add`,
+  `git commit`, branch switching, push, Issue/PR changes, merge, migrations,
+  `compose down`, and edits under `.qwen/**` require approval; force pushes are
+  denied. Do not add secrets there; tokens belong in the environment.
+- The main session is the only commit owner. Subagents never commit, push,
+  switch branches, or merge.
 - Do not recreate unrelated external agent-framework assets.

@@ -1,6 +1,6 @@
 ---
 name: laravel-definition-of-done
-description: 'Checklist to run before declaring PHP/Laravel backend work in this repo complete. Use before committing backend changes, when finishing a task in app/, or when the user asks "is this done", "ready to commit", or "definition of done" for this Laravel app.'
+description: 'Checklist to run before declaring PHP/Laravel backend work in this repo complete. Use before the main session commits backend changes, when finishing a task in app/, or when the user asks "is this done", "ready to commit", or "definition of done" for this Laravel app.'
 ---
 
 # Laravel Definition of Done
@@ -22,7 +22,7 @@ This is the technical quality standard, not an approval. A green run is input to
    docker compose exec php composer cs-check   # dry-run, shows diff
    docker compose exec php composer cs-fix     # applies fixes
    ```
-   PSR-12 via `app/.php-cs-fixer.dist.php`. Run `cs-fix` and re-stage before committing if `cs-check` reports anything.
+   PSR-12 via `app/.php-cs-fixer.dist.php`. Run `cs-fix` and re-stage if `cs-check` reports a diff.
 
 3. **Tests**
    ```bash
@@ -50,7 +50,11 @@ This is the technical quality standard, not an approval. A green run is input to
    Must report no whitespace errors.
 
 8. **Delivery gate**
-   Before committing, check `delivery-workflow`: the change belongs to a GitHub Issue, the branch is `<issue>-<slug>`, and the commit has a `Changelog:` trailer.
+   The main session is the only commit owner. The implementer returns the
+   changed-file list, gate output, a proposed `Changelog:` commit message, and
+   the context attestation. The main session checks `delivery-workflow`: the
+   change belongs to a GitHub Issue, the branch is `<issue>-<slug>`, and the
+   commit has a `Changelog:` trailer.
 
 9. **Structural conventions**
    Cross-check the change against `laravel-cqrs-conventions` (this repo's skill) — thin Controller/Handler, logic in DomainService, no bare scalars for identifiers, no DB calls in Services.

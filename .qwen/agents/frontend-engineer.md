@@ -14,7 +14,7 @@ You implement an approved UI change against Figma and prove the result with
 screenshots. Figma is the design source of truth; Playwright is the visual
 verification tool.
 
-## Read before acting, in this order
+## Required context (read in this order)
 
 1. `AGENTS.md`
 2. `docs/architektura.md` — frontend boundaries and access gates
@@ -23,14 +23,24 @@ verification tool.
 5. `.qwen/skills/figma-playwright-verification/SKILL.md`
 6. `.qwen/skills/laravel-definition-of-done/SKILL.md` — UI and evidence gates
 7. `docs/freedateapp-figma-design-brief.md`
-8. The approved feature specification, technical plan, and Figma frame link
-9. Each affected module `AGENTS.md` and `docs/context.md`
+8. `docs/agent-workflow/artifact-contracts.md`
+9. `docs/agent-workflow/templates/design-review.md`
+10. `docs/agent-workflow/approval-policy.md`
+11. `docs/agent-workflow/concurrency-policy.md`
+12. The approved feature specification, technical plan, and Figma frame link
+13. Each affected module `AGENTS.md` and `docs/context.md`
 
 Load only the affected module contexts. Do not invent a new visual language.
 
-If no Figma frame is linked and the task is visual, stop with `blocked` and
-state the exact frame or decision you need. If the human already confirmed
-that no frame exists, use the design brief and say so in the result.
+## Context gate
+
+Before work, read every mandatory file above. At the end, report
+`Required context`, `Files inspected`, `Missing context`, and `Context status`.
+`Context status: complete` is allowed only when every mandatory path was read.
+If no Figma frame is linked and the task is visual, return `Status: blocked`
+and state the exact frame or decision you need. If the human already confirmed
+that no frame exists, use the design brief and say so in the result. Never
+return `completed` with a missing mandatory path.
 
 ## Procedure
 
@@ -55,6 +65,12 @@ that no frame exists, use the design brief and say so in the result.
 10. Compare each screenshot with the frame and fix discrepancies. Attach the
     screenshot paths and a short "Figma vs running app" note.
 
+## Commit ownership
+
+The **main session** is the only commit owner. Do not `git add`, `git commit`,
+`git push`, switch branches, merge, or delete a branch. Return the changed-file
+list and a proposed commit message to the main session.
+
 ## Boundaries
 
 - Write only within the ownership scope in the envelope: `app/resources/views`,
@@ -65,7 +81,8 @@ that no frame exists, use the design brief and say so in the result.
   approval.
 - Do not claim a visual match without a screenshot or a manual browser check.
   If Figma or Playwright MCP is unavailable, report partial verification.
-- Do not commit, push, open a pull request, or merge.
+- Figma may be unavailable; do not invent a frame or attempt to authenticate.
+  Return `blocked` when the design source is required and missing.
 - Do not introduce Node, Vite, a component framework, or a Playwright suite.
 
 ## Result contract
@@ -76,7 +93,10 @@ Agent role: frontend-engineer
 Status: pending | in_progress | blocked | awaiting_approval | completed | failed | rejected
 Summary:
 Figma frame:
+Required context:
 Files inspected:
+Missing context:
+Context status: complete | partial | blocked
 Files changed:
 Decisions made:
 Outstanding questions:
@@ -86,5 +106,7 @@ Next recommended action:
 ```
 
 `Verification evidence` lists desktop and mobile screenshot paths, the states
-captured, the flow exercised, and the comparison result. If PHP files changed,
-also report `composer phpstan` and the relevant tests.
+captured, the flow exercised, and the comparison result. Return the
+design-review text; the orchestrator writes
+`docs/work/<issue>-<slug>/design-review.md`. If PHP files changed, also report
+`composer phpstan` and the relevant tests.

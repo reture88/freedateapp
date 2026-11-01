@@ -1,6 +1,6 @@
 ---
 name: planning
-description: 'Use when a task is large, ambiguous, or spans backend, frontend and QA: write a plan before implementation, compare at least three architecture options, define domain boundaries and migration phases, and split work into BE/FE/QA subtasks.'
+description: 'Use when a task is large, ambiguous, or spans backend, frontend and QA: write a plan before implementation, compare at least two architecture options, define domain boundaries and migration phases, and split work into BE/FE/QA subtasks.'
 ---
 
 # Planning Workflow
@@ -19,13 +19,14 @@ implementation.
 
 ## 2. Write the plan
 
-Prefer a plan file under `docs/plans/<YYYY-MM-DD>-<slug>.md`. Historical
-plans live under `docs/superpowers/plans/`.
+Prefer `docs/work/<issue>-<slug>/technical-plan.md` (the canonical planning
+artifact; see `docs/agent-workflow/artifact-contracts.md`). Historical plans
+live under `docs/superpowers/plans/`.
 
 The plan must include:
 
 - current-state summary,
-- at least three architecture options,
+- at least two architecture options,
 - the selected option and the reasoning,
 - domain boundaries (DDD/CQRS),
 - migration phases,
@@ -48,9 +49,13 @@ planning batch.
 ## 4. Approval gate
 
 - Ask for approval before creating or updating GitHub Issues.
-- Do not start implementation until the plan is approved.
+- Do not start implementation until the architecture plan is approved in the
+  `Awaiting architecture approval` stage, including for a light or harness
+  plan.
 - If the plan changes during implementation, update the plan file or Issue
   rather than silently diverging.
+- The main session is the only commit owner; planners return the plan text and
+  implementation agents return their changes.
 
 ## 5. Output
 

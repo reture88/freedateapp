@@ -6,6 +6,11 @@ labels: ""
 assignees: ""
 ---
 
+## Task type
+
+Task type: <!-- Required: one of backend-bugfix, backend-feature, frontend-feature,
+fullstack-feature, security-fix, docs-harness. -->
+
 ## Context
 
 <!-- Current behavior, motivation, and the affected module(s). -->

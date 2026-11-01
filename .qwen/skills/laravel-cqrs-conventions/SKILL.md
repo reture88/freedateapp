@@ -5,7 +5,7 @@ description: 'Structural and coding conventions for this repo''s hand-rolled Lar
 
 # Laravel CQRS Conventions
 
-Adapted from the reference implementation's `.windsurf/rules/laravel-developer.md`. For how the bus itself resolves handlers and how routes are auto-discovered, see `AGENTS.md` at the repo root first. This skill covers the per-file structural rules that sit on top of that mechanism.
+Adapted from the reference implementation's `.windsurf/rules/laravel-developer.md`. For how the bus itself resolves handlers and how routes are auto-discovered, see `docs/architektura.md` first. This skill covers the per-file structural rules that sit on top of that mechanism.
 
 ## Layer responsibilities
 
@@ -25,7 +25,7 @@ Each module under `app/src/<Module>/` keeps these concerns strictly separate:
 - No DB/Eloquent queries inside a DomainService. If a module needs one, add a `Dto/Repository/{X}RepositoryInterface.php` + an Eloquent implementation, and bind it in `CqrsServiceProvider::register()`. (Prefer calling Eloquent models directly from the DomainService when the model *is* the aggregate root and no cross-cutting query logic is needed — that's what `Auth`/`User` currently do against `App\Models\User`. Only introduce a repository when there's real query complexity to hide.)
 - Never inject one repository into another (avoids container resolution loops).
 - Every property on a Value Object or Entity is strictly typed — no bare `int`/`string` standing in for a domain identifier.
-- No inline comments. DocBlocks only where the *why* isn't obvious from the code (this matches the project-wide rule in the root `AGENTS.md`).
+- No inline comments. DocBlocks only where the *why* isn't obvious from the code (this matches `docs/kod-konvencio.md`).
 - Nullable constructor parameters go last, with a default of `null`.
 - Backed enums only; case names UPPERCASE.
 - Single-value ValueObjects must not wrap nullable attributes. When a value is optional, pass `null` instead of instantiating the ValueObject.

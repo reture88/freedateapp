@@ -15,8 +15,11 @@ Playwright config, or Node E2E suite.
    the GitHub Issue or pull request when present.
 2. Read the frame through Figma MCP: layout, spacing, type scale, colors,
    component states, copy, and responsive variants.
-3. If no Figma frame is linked, ask for it. If the user confirms no frame
+3. If no Figma frame is linked, record the exact frame question under
+   `Outstanding questions` and return `Status: blocked` (or `awaiting_approval`
+   when a human decision is the only blocker). If the human confirms no frame
    exists, use `docs/freedateapp-figma-design-brief.md` for intent and say so.
+   A subagent cannot ask the user directly.
 4. Map the frame to the implementation:
    - Blade/Livewire screen under `app/resources/views`.
    - Livewire component under `app/app/Livewire`.
@@ -60,7 +63,9 @@ Playwright config, or Node E2E suite.
   manual browser check, and mark the visual verification as partial.
 - Keep the design-system classes (`mtam-`) and the existing CSS variables;
   do not add a second visual language.
-- When the frame and the design brief disagree, ask which one wins.
+- When the frame and the design brief disagree, record the conflict under
+  `Outstanding questions` and return `awaiting_approval`; a subagent cannot
+  ask the user directly.
 
 ## Evidence format for the pull request
 

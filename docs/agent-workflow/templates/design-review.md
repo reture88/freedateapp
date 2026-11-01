@@ -5,6 +5,7 @@ Task ID: <issue>-design-<n>
 Issue: #<issue> <url>
 Author: frontend-engineer
 Date: <YYYY-MM-DD>
+Status: pending | in_progress | blocked | awaiting_approval | completed | failed | rejected
 Verdict: pass | pass with gaps | fail
 ```
 
@@ -54,6 +55,25 @@ Verdict: pass | pass with gaps | fail
 ## Remaining gaps
 
 - <gap and reason, or "none">
+
+## Context attestation
+
+```text
+Required context:
+Files inspected:
+Missing context:
+Context status: complete | partial | blocked
+```
+
+## Approval
+
+```text
+Approved by:
+Date:
+Scope:
+Conditions:
+Evidence:
+```
 
 ## Verdict
 

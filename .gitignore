@@ -1,5 +1,6 @@
 .idea/
 /.env
+.qwen/worktrees/
 
 /app/.env
 /app/node_modules

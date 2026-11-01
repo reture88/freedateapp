@@ -5,6 +5,7 @@ paths:
   - 'app/tests/**'
   - 'app/database/**'
   - 'app/routes/**'
+  - 'app/config/**'
   - 'app/app/Http/**'
   - 'app/app/Models/**'
   - 'app/app/Providers/**'

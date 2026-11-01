@@ -5,7 +5,7 @@ Task ID: <issue>-product-<n>
 Issue: #<issue> <url>
 Author: product-validator
 Date: <YYYY-MM-DD>
-Status: draft | awaiting_approval | approved
+Status: pending | in_progress | blocked | awaiting_approval | completed | failed | rejected
 ```
 
 ## Problem
@@ -50,6 +50,15 @@ implementation.>
 ## Open questions
 
 - <question and recommendation>
+
+## Context attestation
+
+```text
+Required context:
+Files inspected:
+Missing context:
+Context status: complete | partial | blocked
+```
 
 ## Approval
 
